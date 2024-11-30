@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::Write;
 type Table = HashMap<String, Vec<String>>;
@@ -14,8 +14,8 @@ fn show(table: &Table) {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Write;
     use crate::basic_collection::{show, Table};
+    use std::io::Write;
 
     #[test]
     fn test_hashmap() {
@@ -50,6 +50,8 @@ mod tests {
         let mut ls_str = Vec::<String>::new();
         ls_str.push(String::from("test1"));
         let itm = &ls_str[0];
-        std::io::stdout().write_all(format!("{}", itm).as_bytes()).expect("TODO: panic message");
+        std::io::stdout()
+            .write_all(format!("{}", itm).as_bytes())
+            .expect("TODO: panic message");
     }
 }

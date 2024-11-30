@@ -1,12 +1,11 @@
+use log::{info, log};
 use std::ops::{Add, Deref, Mul};
 use std::process::Output;
-use log::{info, log};
-// use num::Num;
-// use crate::advanced::configuration::{Configuration, init_logger, load_config_file};
-use utils::log::configuration::{init_logger};
 
 fn dot<N>(v1: &[N], v2: &[N]) -> N
-where N: Add<Output=N> + Mul<Output=N> + Default + Copy {
+where
+    N: Add<Output = N> + Mul<Output = N> + Default + Copy,
+{
     let mut total = N::default();
     for i in 0..v1.len() {
         total = total + v1[i] * v2[i];
@@ -27,13 +26,15 @@ struct Complex<T> {
     im: T,
 }
 
-impl <L, R> Add<Complex<R>> for Complex<L>
-where L: Add<R> {
+impl<L, R> Add<Complex<R>> for Complex<L>
+where
+    L: Add<R>,
+{
     type Output = Complex<L::Output>;
     fn add(self, rhs: Complex<R>) -> Self::Output {
         Complex {
             re: self.re + rhs.re,
-            im: self.im + rhs.im
+            im: self.im + rhs.im,
         }
     }
 }
@@ -47,14 +48,14 @@ fn test_ov() {
 
 struct Person {
     id: u64,
-    name: String
+    name: String,
 }
 
 struct Student(Person);
 
 struct Student2 {
     person: Person,
-    class_id: u32
+    class_id: u32,
 }
 
 impl Deref for Student {
@@ -73,9 +74,19 @@ impl Deref for Student2 {
     }
 }
 
-#[test]
-fn test_multi_deref() {
-    init_logger();
-    let s = Student(Person{id:1, name:"test".to_string()});
-    info!("{}", s.name);
+#[cfg(test)]
+mod tests {
+    use log::info;
+    use utils::log::configuration::init_logger;
+    use crate::basic_struct::{Person, Student};
+
+    #[test]
+    fn test_multi_deref() {
+        init_logger();
+        let s = Student(Person {
+            id: 1,
+            name: "test".to_string(),
+        });
+        info!("{}", s.name);
+    }
 }

@@ -1,12 +1,11 @@
-
-use std::{fmt::Debug, str::FromStr};
-use chrono::{NaiveDateTime, Local};
 use bigdecimal::BigDecimal;
-use num::{FromPrimitive, One, Zero};
+use chrono::{Local, NaiveDateTime};
+use num::Zero;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::{fmt::Debug, str::FromStr};
 
-use utils::format::date_format;
 use utils::format::bigdecimal_format;
+use utils::format::date_format;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Order {
@@ -18,7 +17,6 @@ struct Order {
     #[serde(rename = "totalAmount", with = "bigdecimal_format")]
     total_amount: BigDecimal,
     #[serde(rename = "orderDetails")]
-
     order_details: Vec<OrderDetail>,
 }
 
@@ -57,7 +55,7 @@ fn test_json_struct() {
     let obj: Order = serde_json::from_str(&json).unwrap();
     println!("Object:{:?}", obj);
 
-    let od = &mut order.order_details[0];       
+    let od = &mut order.order_details[0];
     od.price = BigDecimal::from_str("3.141592").unwrap();
     println!("1st obj:{:?}", od);
 }
