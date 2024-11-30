@@ -1,6 +1,33 @@
 [package]
-name = "syntax"
+name = "struct"
 version = "0.1.0"
 edition = "2021"
 
+#[target.aarch64-unknown-linux-musl]
+#rustflags = ["-C", "target-feature=-crt-static"]
+#[target.x86_64-unknown-linux-musl]
+#rustflags = ["-C", "target-feature=-crt-static"]
+#[target.x86_64-unknown-linux-gnu]
+#rustflags = ["-C", "target-feature=+crt-static"]
+#[target.x86_64-apple-darwin]
+#rustflags = ["-C", "target-feature=+crt-static"]
+#[target.x86_64-pc-windows-msvc]
+#rustflags = ["-C", "target-feature=+crt-static"]
+
+
 [dependencies]
+utils={path = "../utils"}
+serde = { version =  "^1", features = ["derive"] }
+serde_json = "^1"
+num = "^0"
+log = "^0"
+chrono = "^0"
+rust_decimal="^1"
+bigdecimal = "^0"
+
+[dev-dependencies]
+[profile.release]
+opt-level = "z" # Tối ưu hóa cho kích thước nhỏ nhất
+lto = true     # Link-time optimization
+
+# rustup target add x86_64-unknown-linux-musl
