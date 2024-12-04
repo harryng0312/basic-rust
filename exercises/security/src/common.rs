@@ -1,5 +1,4 @@
-use base64_stream::{FromBase64Reader, FromBase64Writer, ToBase64Reader, ToBase64Writer};
-use log::info;
+use base64_stream::{FromBase64Reader, ToBase64Reader};
 use openssl::rand::rand_bytes;
 use rand::Rng;
 use std::error::Error;
@@ -30,9 +29,9 @@ pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> Result<(), Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
+    use crate::common::{from_base64, gen_random_byte_arr, to_base64};
     use log::info;
     use utils::log::configuration::init_logger;
-    use crate::common::{from_base64, gen_random_byte_arr, to_base64};
 
     #[test]
     fn test_gen_random_byte_arr() {
