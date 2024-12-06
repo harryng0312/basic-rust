@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/exercises/network/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/exercises/security/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/exercises/thread/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exercises/ml/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/exercises/io/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
