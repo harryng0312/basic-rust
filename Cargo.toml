@@ -2,6 +2,9 @@
 members = [
     "exercises/*",
 ]
+
+exclude = []
+
 resolver = "2"
 
 [package]
