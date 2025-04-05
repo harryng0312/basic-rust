@@ -18,11 +18,16 @@ fn create_ndarray() {
         // rng.gen_range(-limit..=limit)
         rng.gen_range(0..100)
     });
+
     println!("a matrix: {:?}\ntranspose:{:?}", a, a.t());
-    let row0: Array1<f64> = a.row(0).map(|&x| x as f64).to_owned();
-    let row1: Array1<f64> = a.row(1).map(|&x| x as f64).to_owned();
-    let row0_reshaped = row0.to_owned().into_shape_clone((NO_COLS, 1)).unwrap();
-    let row1_reshaped = row1.to_owned().into_shape_clone((1, NO_COLS)).unwrap();
+    // let row1: Array1<f64> = a.row(1).map(|&x| x as f64).to_owned();
+    // let row0: Array1<f64> = a.row(0).map(|&x| x as f64).to_owned();
+    let row1: Array1<f64> = a.row(1).map(|&x| x as f64);
+    let row0: Array1<f64> = a.row(0).map(|&x| x as f64);
+    // let row0_reshaped = row0.into_shape_clone((NO_COLS, 1)).unwrap();
+    // let row1_reshaped = row1.into_shape_clone((1, NO_COLS)).unwrap();
+    let row0_reshaped = row0.to_shape((NO_COLS, 1)).unwrap();
+    let row1_reshaped = row1.to_shape((1, NO_COLS)).unwrap();
     println!(
         "Khoảng cách Euclidean: {:?}\ndot product:{:?}\nvector prod:{:?}\nouter prod:{:?}",
         calc_euclidean(&row0, &row1),
