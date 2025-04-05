@@ -24,7 +24,7 @@ pub struct TcpServerCfg {
 pub struct TcpClientCfg {
     pub address: String,
     pub port: u16,
-    pub buffer_size: usize
+    pub buffer_size: usize,
 }
 #[derive(Debug, Deserialize)]
 pub struct UdpServerCfg {
@@ -37,5 +37,5 @@ pub struct UdpServerCfg {
 pub struct UdpClientCfg {
     pub address: String,
     pub port: u16,
-    pub buffer_size: usize
+    pub buffer_size: usize,
 }

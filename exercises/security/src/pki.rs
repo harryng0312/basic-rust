@@ -1,13 +1,17 @@
-use std::error::Error;
+use crate::common::to_base64;
 use libc::passwd;
 use log::info;
 use openssl::ec::{EcGroup, EcKey};
 use openssl::nid::Nid;
 use openssl::symm::Cipher;
+use std::error::Error;
 use utils::log::configuration::init_logger;
-use crate::common::to_base64;
 
-fn gen_keypair(use_pem: bool, cipher: Option<Cipher>, passwd: Option<&[u8]>) -> Result<(String, String), Box<dyn Error>> {
+fn gen_keypair(
+    use_pem: bool,
+    cipher: Option<Cipher>,
+    passwd: Option<&[u8]>,
+) -> Result<(String, String), Box<dyn Error>> {
     let ec_group = EcGroup::from_curve_name(Nid::SECP256K1).unwrap();
     let ec_key = EcKey::generate(&ec_group).unwrap();
     let mut priv_key_b64 = "".to_string();
@@ -15,12 +19,18 @@ fn gen_keypair(use_pem: bool, cipher: Option<Cipher>, passwd: Option<&[u8]>) -> 
     if use_pem {
         if cipher.is_some() && passwd.is_some() {
             priv_key_b64 = String::from_utf8_lossy(
-                ec_key.private_key_to_pem_passphrase(cipher.unwrap(), passwd.unwrap())
-                    .unwrap().as_slice()).to_string();
+                ec_key
+                    .private_key_to_pem_passphrase(cipher.unwrap(), passwd.unwrap())
+                    .unwrap()
+                    .as_slice(),
+            )
+            .to_string();
         } else {
-            priv_key_b64 = String::from_utf8_lossy(ec_key.private_key_to_pem().unwrap().as_slice()).to_string();
+            priv_key_b64 = String::from_utf8_lossy(ec_key.private_key_to_pem().unwrap().as_slice())
+                .to_string();
         }
-        pub_key_b64 = String::from_utf8_lossy(ec_key.public_key_to_pem().unwrap().as_slice()).to_string();
+        pub_key_b64 =
+            String::from_utf8_lossy(ec_key.public_key_to_pem().unwrap().as_slice()).to_string();
     } else {
         priv_key_b64 = to_base64(ec_key.private_key_to_der().unwrap().as_slice()).unwrap();
         pub_key_b64 = to_base64(ec_key.public_key_to_der().unwrap().as_slice()).unwrap();

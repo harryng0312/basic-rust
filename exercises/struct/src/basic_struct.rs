@@ -76,9 +76,9 @@ impl Deref for Student2 {
 
 #[cfg(test)]
 mod tests {
+    use crate::basic_struct::{Person, Student};
     use log::info;
     use utils::log::configuration::init_logger;
-    use crate::basic_struct::{Person, Student};
 
     #[test]
     fn test_multi_deref() {

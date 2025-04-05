@@ -1,9 +1,9 @@
-use std::cmp::{max, min};
-use std::error::Error;
+use crate::common::gen_random_byte_arr;
 use log::{error, info};
 use openssl::symm::{Cipher, Crypter, Mode};
+use std::cmp::{max, min};
+use std::error::Error;
 use utils::log::configuration::init_logger;
-use crate::common::gen_random_byte_arr;
 
 // #[test]
 pub fn test_aes_ctr() {
@@ -24,7 +24,13 @@ pub fn test_aes_ctr() {
     // encrypt
     let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
     {
-        let mut encryptor = Crypter::new(cipher, Mode::Encrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut encryptor = Crypter::new(
+            cipher,
+            Mode::Encrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
         let mut buff = vec![0u8; key_size];
@@ -46,9 +52,17 @@ pub fn test_aes_ctr() {
     // decrypt
     {
         let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(cipher, Mode::Decrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut decryptor = Crypter::new(
+            cipher,
+            Mode::Decrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         let mut count = 0usize;
-        count += decryptor.update(cipher_data.as_slice(), &mut plain_data).unwrap();
+        count += decryptor
+            .update(cipher_data.as_slice(), &mut plain_data)
+            .unwrap();
         let mut buff: Vec<u8> = vec![0u8; key_size];
         let f_count = decryptor.finalize(&mut *buff).unwrap();
         if f_count > 0 {
@@ -83,7 +97,13 @@ fn test_aes_gcm() {
     let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
     let mut tag_data: Vec<u8> = vec![0u8; 128 / 8]; // tag length is fixed to 128bit
     {
-        let mut encryptor = Crypter::new(cipher, Mode::Encrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut encryptor = Crypter::new(
+            cipher,
+            Mode::Encrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         // encryptor.set_tag_len(key_size).unwrap();
         // tag_data.resize(key_size, 0u8);
         let mut count = 0usize;
@@ -109,11 +129,19 @@ fn test_aes_gcm() {
     // decrypt
     {
         let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(cipher, Mode::Decrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut decryptor = Crypter::new(
+            cipher,
+            Mode::Decrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         let mut count = 0usize;
         decryptor.aad_update(aad_bin.as_slice()).unwrap();
         decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor.update(cipher_data.as_slice(), &mut plain_data).unwrap();
+        count += decryptor
+            .update(cipher_data.as_slice(), &mut plain_data)
+            .unwrap();
         let mut buff: Vec<u8> = vec![0u8; key_size];
         let f_count = decryptor.finalize(&mut *buff).unwrap();
         if f_count > 0 {
@@ -146,9 +174,15 @@ fn test_aes_xts() {
     info!("Plain[{}]:{:?}", data.len(), data);
     // encrypt
     let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    // let mut tag_data: Vec<u8> = vec![0u8; 16];
+                                           // let mut tag_data: Vec<u8> = vec![0u8; 16];
     {
-        let mut encryptor = Crypter::new(cipher, Mode::Encrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut encryptor = Crypter::new(
+            cipher,
+            Mode::Encrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         cipher.key_len();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
@@ -172,11 +206,19 @@ fn test_aes_xts() {
     // decrypt
     {
         let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(cipher, Mode::Decrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut decryptor = Crypter::new(
+            cipher,
+            Mode::Decrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         let mut count = 0usize;
         // decryptor.aad_update(aad_bin.as_slice()).unwrap();
         // decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor.update(cipher_data.as_slice(), &mut plain_data).unwrap();
+        count += decryptor
+            .update(cipher_data.as_slice(), &mut plain_data)
+            .unwrap();
         let mut buff: Vec<u8> = vec![0u8; key_size];
         let f_count = decryptor.finalize(&mut *buff).unwrap();
         if f_count > 0 {
@@ -211,11 +253,19 @@ fn test_chacha20_poly1305() {
     let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
     let mut tag_data: Vec<u8> = vec![0u8; 16];
     {
-        let mut encryptor = Crypter::new(cipher, Mode::Encrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut encryptor = Crypter::new(
+            cipher,
+            Mode::Encrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         cipher.key_len();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
-        encryptor.aad_update(aad_bin.as_slice()).expect("Cannot add AAD!");
+        encryptor
+            .aad_update(aad_bin.as_slice())
+            .expect("Cannot add AAD!");
         let mut buff = vec![0u8; key_size];
         for i in (0..data.len()).step_by(key_size) {
             let b_right = min(i + key_size, data.len());
@@ -236,11 +286,19 @@ fn test_chacha20_poly1305() {
     // decrypt
     {
         let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(cipher, Mode::Decrypt, key_bin.as_slice(), Some(iv_bin.as_slice())).unwrap();
+        let mut decryptor = Crypter::new(
+            cipher,
+            Mode::Decrypt,
+            key_bin.as_slice(),
+            Some(iv_bin.as_slice()),
+        )
+        .unwrap();
         let mut count = 0usize;
         decryptor.aad_update(aad_bin.as_slice()).unwrap();
         decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor.update(cipher_data.as_slice(), &mut plain_data).unwrap();
+        count += decryptor
+            .update(cipher_data.as_slice(), &mut plain_data)
+            .unwrap();
         let mut buff: Vec<u8> = vec![0u8; key_size];
         let f_count = decryptor.finalize(&mut buff).unwrap();
         if f_count > 0 {

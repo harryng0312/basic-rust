@@ -4,12 +4,9 @@ use std::io::{Read, Seek, Write};
 fn copy_file() {
     // open src
     // create dest
-
 }
 
-pub fn test_file() {
-
-}
+pub fn test_file() {}
 
 #[cfg(test)]
 mod tests {

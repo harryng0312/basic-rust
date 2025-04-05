@@ -1,4 +1,4 @@
-use ndarray::{Array1, Array2, ArrayBase, CowArray};
+use ndarray::{Array1, Array2};
 use ndarray_rand::RandomExt;
 use std::ops::Mul;
 
@@ -18,6 +18,7 @@ fn create_ndarray() {
         // rng.gen_range(-limit..=limit)
         rng.gen_range(0..100)
     });
+    // let a: Array2<f32> =
 
     println!("a matrix: {:?}\ntranspose:{:?}", a, a.t());
     // let row1: Array1<f64> = a.row(1).map(|&x| x as f64).to_owned();

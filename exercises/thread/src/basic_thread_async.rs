@@ -1,11 +1,11 @@
-use std::sync::{Arc, mpsc};
 use std::sync::mpsc::{Receiver, SyncSender};
+use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
 use chrono::Local;
 use rand::RngCore;
-use tokio::{task, time};
 use tokio::runtime::Builder;
+use tokio::{task, time};
 
 async fn produce(sender: Arc<SyncSender<String>>) {
     let mut rand = rand::thread_rng();
@@ -19,8 +19,10 @@ async fn produce(sender: Arc<SyncSender<String>>) {
 async fn consume(receiver: Receiver<String>) {
     'l: loop {
         match receiver.recv_timeout(Duration::from_secs(5)) {
-            Ok(val) => { println!("Received:{} at:{}", val, Local::now()) }
-            err => { break 'l }
+            Ok(val) => {
+                println!("Received:{} at:{}", val, Local::now())
+            }
+            err => break 'l,
         }
     }
 }
@@ -32,7 +34,8 @@ fn test_prod_cons() {
     let mut rt = Builder::new_multi_thread()
         .enable_all()
         .worker_threads(n + 1)
-        .build().unwrap();
+        .build()
+        .unwrap();
 
     rt.block_on(async {
         let (sender, receiver) = mpsc::sync_channel::<String>(3);

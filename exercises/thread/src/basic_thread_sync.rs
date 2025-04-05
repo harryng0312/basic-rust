@@ -58,10 +58,10 @@ fn test_prod_cons_async_std() {
     let (sender, receiver) = async_channel::bounded::<String>(5);
     async_std::task::block_on(async {
         let p_results: Vec<_> = (0..n)
-            .map(|x| { async_std::task::spawn({ async_produce(x, sender.clone()) }) })
+            .map(|x| async_std::task::spawn({ async_produce(x, sender.clone()) }))
             .collect();
         let c_results: Vec<_> = (0..m)
-            .map(|x1| { async_std::task::spawn({ async_consume(x1, receiver.clone()) }) })
+            .map(|x1| async_std::task::spawn({ async_consume(x1, receiver.clone()) }))
             .collect();
         for p_rs in p_results {
             p_rs.await;

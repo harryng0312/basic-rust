@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test {
+    use crate::common::{from_base64, to_base64};
     use log::info;
     use openssl::bn::BigNum;
     use openssl::derive::Deriver;
@@ -8,7 +9,6 @@ mod test {
     use openssl::nid::Nid;
     use openssl::pkey::{Id, PKey};
     use utils::log::configuration::init_logger;
-    use crate::common::{from_base64, to_base64};
 
     #[test]
     /// Suppose there are 02 people: Alice & Bob
@@ -53,7 +53,11 @@ mod test {
             let mut deriver = Deriver::new(&priv_key).unwrap();
             deriver.set_peer(&partner_pub_key).unwrap();
             let shared_secret = deriver.derive_to_vec().unwrap();
-            info!("Alice's shared secret: {}, len: {}", to_base64(shared_secret.as_slice()).unwrap(), shared_secret.len());
+            info!(
+                "Alice's shared secret: {}, len: {}",
+                to_base64(shared_secret.as_slice()).unwrap(),
+                shared_secret.len()
+            );
         }
 
         // Bob side: Alice sends public_key to Bob. Bob generates the shared secret
@@ -65,7 +69,11 @@ mod test {
             let mut deriver = Deriver::new(&priv_key).unwrap();
             deriver.set_peer(&partner_pub_key).unwrap();
             let shared_secret = deriver.derive_to_vec().unwrap();
-            info!("Bob's shared secret: {}, len: {}", to_base64(shared_secret.as_slice()).unwrap(), shared_secret.len());
+            info!(
+                "Bob's shared secret: {}, len: {}",
+                to_base64(shared_secret.as_slice()).unwrap(),
+                shared_secret.len()
+            );
         }
     }
 
@@ -110,9 +118,20 @@ mod test {
 
         // Calcualte final shared_key
         // TODO: re-check
-        let shared_abc: Vec<u8> = shared_ab.iter().zip(shared_bc.iter()).map(|(x, y)| x ^ y).collect();
-        let final_shared_secret: Vec<u8> = shared_abc.iter().zip(shared_ca.iter()).map(|(x, y)| x ^ y).collect();
-        info!("Shared secret: {:?}", to_base64(final_shared_secret.as_slice()));
+        let shared_abc: Vec<u8> = shared_ab
+            .iter()
+            .zip(shared_bc.iter())
+            .map(|(x, y)| x ^ y)
+            .collect();
+        let final_shared_secret: Vec<u8> = shared_abc
+            .iter()
+            .zip(shared_ca.iter())
+            .map(|(x, y)| x ^ y)
+            .collect();
+        info!(
+            "Shared secret: {:?}",
+            to_base64(final_shared_secret.as_slice())
+        );
 
         // let mut deriver_a_final: Deriver = Deriver::new(&alice_key).unwrap();
         // let shared_bc_ex_pub_key = PKey::public_key_from_raw_bytes(shared_bc.as_slice(), Id::DH).unwrap();

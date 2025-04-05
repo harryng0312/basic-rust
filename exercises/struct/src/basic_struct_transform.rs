@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use std::fmt::Debug;
 // use std::rc::{Rc, Weak};
-use chrono::{ NaiveDateTime};
+use chrono::NaiveDateTime;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::sync::{Weak};
+use std::sync::Weak;
 
 use utils::format::date_format;
 
@@ -53,12 +53,12 @@ struct OrderDetail {
 
 #[cfg(test)]
 mod tests {
+    use crate::basic_struct_transform::{Order, OrderDetail};
+    use chrono::Local;
+    use rust_decimal::prelude::Zero;
+    use rust_decimal::Decimal;
     use std::cell::RefCell;
     use std::sync::Arc;
-    use chrono::Local;
-    use rust_decimal::Decimal;
-    use rust_decimal::prelude::Zero;
-    use crate::basic_struct_transform::{Order, OrderDetail};
 
     #[test]
     fn test_json_struct() {

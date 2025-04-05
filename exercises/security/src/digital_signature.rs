@@ -1,4 +1,4 @@
-use std::io::Write;
+use crate::common::to_base64;
 use libc::tm;
 use log::info;
 use openssl::ec::{EcGroup, EcKey};
@@ -6,8 +6,8 @@ use openssl::hash::MessageDigest;
 use openssl::nid::Nid;
 use openssl::pkey::{PKey, PKeyRef};
 use openssl::sign::{Signer, Verifier};
+use std::io::Write;
 use utils::log::configuration::init_logger;
-use crate::common::to_base64;
 
 #[test]
 fn test_ecdsa() {

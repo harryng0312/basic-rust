@@ -1,4 +1,4 @@
-use chrono::{NaiveDateTime};
+use chrono::NaiveDateTime;
 use serde::{self, Deserialize, Deserializer, Serializer};
 
 const FORMAT: &str = "%Y-%m-%dT%H:%M:%SZ";
@@ -16,6 +16,5 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    NaiveDateTime::parse_from_str(&s, FORMAT)
-        .map_err(serde::de::Error::custom)
+    NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)
 }
