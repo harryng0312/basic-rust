@@ -1,52 +1,12 @@
 use core::f64;
 use crate::number_utils::calc_euclidean;
-use linfa::prelude::*;
-use linfa_preprocessing::linear_scaling::{LinearScaler, ScalingMethod};
 use linfa_preprocessing::PreprocessingError;
-use ndarray::{Array, Array1, Array2, Axis};
-use ndarray_rand::rand_distr::num_traits::Num;
-use ndarray_rand::RandomExt;
+use ndarray::{Array1, Array2, Axis};
 use rand;
 use rand::Rng;
-use std::fmt::Display;
-use std::ops::Mul;
 
-fn create_ndarray() -> Result<(), PreprocessingError> {
-    const NO_ROWS: usize = 7;
-    const NO_COLS: usize = 5;
-    let input_size = 784;
-    let output_size = 2048;
-    let mut rng = rand::thread_rng();
-    let limit = (6.0 / (input_size + output_size) as f32).sqrt();
-    let mut inp_arr: Array2<i32> = Array2::<i32>::from_shape_fn((NO_ROWS, NO_COLS), |(_, i)| {
-        // rng.gen_range(-limit..=limit)
-        rng.gen_range(0..100)
-    });
-    println!("a matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
-    let inp_arr = scale_min_max(&inp_arr.mapv(|x| x as f64))?;
-    println!("scaled matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
-    // let row1: Array1<f64> = a.row(1).map(|&x| x as f64).to_owned();
-    // let row0: Array1<f64> = a.row(0).map(|&x| x as f64).to_owned();
-    let row1: Array1<f64> = inp_arr.row(1).map(|&x| x as f64);
-    let row0: Array1<f64> = inp_arr.row(0).map(|&x| x as f64);
-    // let row0_reshaped = row0.into_shape_clone((NO_COLS, 1)).unwrap();
-    // let row1_reshaped = row1.into_shape_clone((1, NO_COLS)).unwrap();
-    let row0_reshaped = row0.to_shape((NO_COLS, 1)).unwrap();
-    let row1_reshaped = row1.to_shape((1, NO_COLS)).unwrap();
-    println!(
-        "Khoảng cách Euclidean: {:?}\ndot product:{:?}\nvector prod:{:?}\nouter prod:{:?}",
-        calc_euclidean(&row0, &row1),
-        // a.dot(&a.t())
-        // Array2::dot(&a, &a.t())
-        &inp_arr.dot(&inp_arr.t()),
-        &row0.dot(&row1),
-        &row0_reshaped * &row1_reshaped,
-    );
 
-    Ok(())
-}
-
-fn scale_min_max(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingError> {
+fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingError> {
     // let dataset = Dataset::from(inp_arr);
     // let targets: Array1<usize> = Array1::zeros(inp_arr.shape()[0]);
     // let mut records = inp_arr.clone();
@@ -79,12 +39,47 @@ fn scale_min_max(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingErro
     Ok(scaled_arr)
 }
 
+fn create_ndarray() -> Result<(), PreprocessingError> {
+    const NO_ROWS: usize = 7;
+    const NO_COLS: usize = 5;
+    let input_size = 784;
+    let output_size = 2048;
+    let mut rng = rand::thread_rng();
+    let limit = (6.0 / (input_size + output_size) as f32).sqrt();
+    let inp_arr: Array2<i32> = Array2::<i32>::from_shape_fn((NO_ROWS, NO_COLS), |(_, i)| {
+        // rng.gen_range(-limit..=limit)
+        rng.gen_range(0..100)
+    });
+    println!("a matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
+    let inp_arr = min_max_scale(&inp_arr.mapv(|x| x as f64))?;
+    println!("scaled matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
+    // let row1: Array1<f64> = a.row(1).map(|&x| x as f64).to_owned();
+    // let row0: Array1<f64> = a.row(0).map(|&x| x as f64).to_owned();
+    let row1: Array1<f64> = inp_arr.row(1).map(|&x| x as f64);
+    let row0: Array1<f64> = inp_arr.row(0).map(|&x| x as f64);
+    // let row0_reshaped = row0.into_shape_clone((NO_COLS, 1)).unwrap();
+    // let row1_reshaped = row1.into_shape_clone((1, NO_COLS)).unwrap();
+    let row0_reshaped = row0.to_shape((NO_COLS, 1)).unwrap();
+    let row1_reshaped = row1.to_shape((1, NO_COLS)).unwrap();
+    println!(
+        "Khoảng cách Euclidean: {:?}\ndot product:{:?}\nvector prod:{:?}\nouter prod:{:?}",
+        calc_euclidean(&row0, &row1),
+        // a.dot(&a.t())
+        // Array2::dot(&a, &a.t())
+        &inp_arr.dot(&inp_arr.t()),
+        &row0.dot(&row1),
+        &row0_reshaped * &row1_reshaped,
+    );
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use crate::nd_array::create_ndarray;
 
     #[test]
     fn test_ndarray() {
-        create_ndarray();
+        _ = create_ndarray();
     }
 }
