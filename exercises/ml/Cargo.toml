@@ -7,4 +7,6 @@ edition = "2021"
 ndarray = "^0"
 ndarray-rand = "^0"
 rand = "^0"
-linfa = { version = "^0", features = ["openblas"]}
+linfa = "^0"
+#linfa-datasets = "^0"
+linfa-preprocessing = "^0"
