@@ -11,12 +11,12 @@ fn create_scratter()-> Result<(), Box<dyn std::error::Error>> {
     root.fill(&WHITE)?;
 
     // Create sine with noise data
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let x_values: Vec<f64> = (0..1000).map(|x| x as f64 * 4.0 * PI / 1000.0).collect();
     let sin_values: Vec<(f64, f64)> = x_values
         .iter()
         .map(|&x| {
-            let noise = rng.gen_range(-0.2..0.2);
+            let noise = rng.random_range(-0.2..0.2);
             (x, x.sin() + noise)
         })
         .collect();

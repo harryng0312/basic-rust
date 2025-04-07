@@ -44,11 +44,11 @@ fn create_ndarray() -> Result<(), PreprocessingError> {
     const NO_COLS: usize = 5;
     let input_size = 784;
     let output_size = 2048;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let _limit = (6.0 / (input_size + output_size) as f32).sqrt();
     let inp_arr: Array2<i32> = Array2::<i32>::from_shape_fn((NO_ROWS, NO_COLS), |(_, _)| {
         // rng.gen_range(-limit..=limit)
-        rng.gen_range(0..100)
+        rng.random_range(0..100)
     });
     println!("a matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
     let inp_arr = min_max_scale(&inp_arr.mapv(|x| x as f64))?;
