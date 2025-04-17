@@ -1,19 +1,24 @@
-use core::f64;
 use crate::number_utils::calc_euclidean;
-use linfa_preprocessing::PreprocessingError;
-use ndarray::{Array1, Array2, Axis};
+use core::f64;
+// use linfa::prelude::{Fit, Transformer};
+// use linfa_preprocessing::PreprocessingError;
+use ndarray::{Array1, Array2};
 use rand;
 use rand::Rng;
+use smartcore::api::{Transformer, UnsupervisedEstimator};
+use smartcore::linalg::basic::arrays::Array;
+use smartcore::linalg::basic::matrix::DenseMatrix;
+use smartcore::preprocessing::numerical::{StandardScaler, StandardScalerParameters};
+use std::error::Error;
 
-
-fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingError> {
+fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, Box<dyn Error>> {
     // let dataset = Dataset::from(inp_arr);
     // let targets: Array1<usize> = Array1::zeros(inp_arr.shape()[0]);
     // let mut records = inp_arr.clone();
     // let targets = Array::zeros(records.nrows());
     // let dataset = Dataset::new(records, targets);
     // let min_max_params = LinearScaler::min_max_range(0.0, 1.0).fit(&dataset)?;
-
+    //
     // Ok(min_max_params
     //     .transform(dataset)
     //     .map(|x| x as f64)
@@ -27,19 +32,33 @@ fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingErro
     //         col.mapv_inplace(|x| (x - min) / (max - min));
     //     }
     // }
-    let mins = inp_arr.fold_axis(Axis(0), f64::MAX, |&a, &b| a.min(b));
-    let maxs = inp_arr.fold_axis(Axis(0), f64::MIN, |&a, &b| a.max(b));
-    let scaled_arr = inp_arr.mapv(|x| {
-        let col_min = mins[0] as f64;
-        let col_max = maxs[0] as f64;
-        
-        (x as f64 - col_min) / (col_max - col_min)
-    });
 
-    Ok(scaled_arr)
+    // let mins = inp_arr.fold_axis(Axis(0), f64::MAX, |&a, &b| a.min(b));
+    // let maxs = inp_arr.fold_axis(Axis(0), f64::MIN, |&a, &b| a.max(b));
+    // let scaled_arr = inp_arr.mapv(|x| {
+    //     let col_min = mins[0] as f64;
+    //     let col_max = maxs[0] as f64;
+    //
+    //     (x as f64 - col_min) / (col_max - col_min)
+    // });
+    // Ok(scaled_arr)
+    let data =
+        DenseMatrix::from_2d_vec(&inp_arr.rows().into_iter().map(|row| row.to_vec()).collect())?;
+    let scaler = StandardScaler::fit(&data, StandardScalerParameters::default())?;
+    let transformed_data = scaler.transform(&data)?;
+
+    let (rows, cols) = transformed_data.shape();
+    let flat_vec = transformed_data
+        .iter()
+        .into_iter()
+        .map(|x| x.to_owned())
+        .collect();
+    let array2: Array2<f64> =
+        Array2::from_shape_vec((rows, cols), flat_vec).expect("Không thể tạo Array2");
+    Ok(array2)
 }
 
-fn create_ndarray() -> Result<(), PreprocessingError> {
+fn create_ndarray() -> Result<(), Box<dyn Error>> {
     const NO_ROWS: usize = 7;
     const NO_COLS: usize = 5;
     let input_size = 784;
