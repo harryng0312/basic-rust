@@ -10,8 +10,8 @@ async fn async_gen_sleep_duration<T>(range: Range<T>) -> T
 where
     T: PartialOrd + rand::distr::uniform::SampleUniform,
 {
-    let mut rand = rand::thread_rng();
-    rand.gen_range(range)
+    let mut rand = rand::rng();
+    rand.random_range(range)
 }
 async fn async_produce(idx: i32, sender: async_channel::Sender<String>) {
     let sleep_duration = async_gen_sleep_duration(500..2_000).await;

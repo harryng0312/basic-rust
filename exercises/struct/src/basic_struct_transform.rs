@@ -1,3 +1,4 @@
+use crate::basic_struct_transform::date_format::deserialize;
 use std::cell::RefCell;
 use std::fmt::Debug;
 // use std::rc::{Rc, Weak};
@@ -5,9 +6,10 @@ use chrono::NaiveDateTime;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::sync::Weak;
+use std::sync::{Arc, RwLock, Weak};
 
 use utils::format::date_format;
+use utils::serde::vector_serde::vec_rw_serde;
 
 // fn serialize_naive_datetime<S>(dt: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
 // where
@@ -31,8 +33,9 @@ struct Order {
     order_date: NaiveDateTime,
     #[serde(rename = "totalAmount")]
     total_amount: Decimal,
-    #[serde(rename = "orderDetails")]
-    order_details: RefCell<Vec<OrderDetail>>,
+    #[serde(rename = "orderDetails", with = "vec_rw_serde")]
+    // order_details: RefCell<Vec<OrderDetail>>,
+    order_details: Arc<RwLock<Vec<OrderDetail>>>,
     // order_details: Vec<OrderDetail>,
 }
 // impl<T: Debug> Debug for OrderDetail {
@@ -58,14 +61,15 @@ mod tests {
     use rust_decimal::prelude::Zero;
     use rust_decimal::Decimal;
     use std::cell::RefCell;
-    use std::sync::Arc;
+    use std::sync::{Arc, RwLock};
 
     #[test]
     fn test_json_struct() {
         let /*mut*/ order = Arc::new(Order {
         order_date: Local::now().naive_local(),
         total_amount: Decimal::zero(),
-        order_details: RefCell::new(vec![]),
+        // order_details: RefCell::new(vec![]),
+        order_details: Arc::new(RwLock::new(vec![])),
     });
         let order_detail = OrderDetail {
             product_id: "".to_string(),
@@ -73,13 +77,15 @@ mod tests {
             price: Default::default(),
             order: Arc::downgrade(&order),
         };
-        order.order_details.borrow_mut().push(order_detail);
+        // order.order_details.borrow_mut().push(order_detail);
+        order.order_details.write().unwrap().push(order_detail);
         // order.order_details.borrow_mut().push(order_detail);
         let json = serde_json::to_string(&(*order)).unwrap();
         println!("Json:{}", json);
         let obj: Order = serde_json::from_str(&json).unwrap();
         println!("Object:{:?}", obj);
-        let od = &mut order.order_details.borrow_mut()[0];
+        // let od = &mut order.order_details.borrow_mut()[0];
+        let od = &mut order.order_details.write().unwrap()[0];
         od.price = Decimal::new(3141, 3);
         println!("1st obj:{:?}", od);
     }

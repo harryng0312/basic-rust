@@ -8,7 +8,7 @@ use tokio::runtime::Builder;
 use tokio::{task, time};
 
 async fn produce(sender: Arc<SyncSender<String>>) {
-    let mut rand = rand::thread_rng();
+    let mut rand = rand::rng();
     // let sleep_duration = rand.gen_range(500..20_000);
     let val = rand.next_u64();
     println!("Sent:{} at:{}", val, Local::now());
@@ -70,7 +70,7 @@ fn test_async_channel() {
     async_std::task::block_on(async {
         for i in 0..3 {
             let receiver = receiver.clone();
-            async_std::task::spawn(async move { // move the receiver
+            async_std::task::spawn(async move {
                 while let Ok(msg) = receiver.recv().await {
                     println!("Receiver {} got: {}", i, msg);
                 }
@@ -79,6 +79,6 @@ fn test_async_channel() {
         for i in 0..5 {
             sender.send(i).await.unwrap();
         }
-        async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+        async_std::task::sleep(Duration::from_secs(1)).await;
     });
 }
