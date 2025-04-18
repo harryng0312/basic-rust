@@ -70,7 +70,7 @@ fn test_async_channel() {
     async_std::task::block_on(async {
         for i in 0..3 {
             let receiver = receiver.clone();
-            async_std::task::spawn(async move {
+            async_std::task::spawn(async move { // move the receiver
                 while let Ok(msg) = receiver.recv().await {
                     println!("Receiver {} got: {}", i, msg);
                 }
