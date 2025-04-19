@@ -232,21 +232,23 @@ fn build_tree(
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(1u32),
+            value: Some(y_train[0].to_owned()),
             left: None,
             right: None,
         };
     }
+    let label_set_iter = labels_set.iter();
     if curr_depth >= max_depth {
-        let label_set_iter = labels_set.iter();
-        let majority_class = label_set_iter
-            .max_by_key(|&x| labels_set.iter().filter(|&y| *y == *x).count())
-            .unwrap();
+        //
+        let majority = label_set_iter
+            .max_by_key(|&x| y_train.iter().filter(|&y| *y == *x).count())
+            .unwrap()
+            .to_owned();
         // info!("majority_class {:?}", majority_class);
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.to_owned()),
+            value: Some(majority),
             left: None,
             right: None,
         };
@@ -257,15 +259,16 @@ fn build_tree(
     // info!("feature_idx {:?}, threshold:{}, max_gain:{}", feature_idx, threshold, max_gain);
     // no gain
     if max_gain <= 0.0 {
-        let label_set_iter = labels_set.iter();
-        let majority_class = label_set_iter
-            .max_by_key(|&x| labels_set.iter().filter(|&y| *y == *x).count())
-            .unwrap();
+        // let label_set_iter = labels_set.iter();
+        let majority = label_set_iter
+            .max_by_key(|&x| y_train.iter().filter(|&y| *y == *x).count())
+            .unwrap()
+            .to_owned();
         // info!("majority_class {:?}", majority_class);
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.to_owned()),
+            value: Some(majority),
             left: None,
             right: None,
         };
@@ -285,8 +288,8 @@ fn build_tree(
 
 fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> u32 {
     if let Some(tree) = tree {
-        if tree.value.is_some() {
-            return tree.value.unwrap();
+        if let Some(tree_val) = tree.value {
+            return tree_val;
         }
         if sample[tree.feature_idx.unwrap()] as f64 <= tree.threshold.unwrap() {
             return predict(&tree.left, sample);
@@ -295,14 +298,15 @@ fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> u32 {
         }
     }
 
-    2
+    0
 }
 fn train_test_split(
     m_X_data: &Vec<Vec<u32>>,
     y_data: &Vec<u32>,
     test_size: f64,
 ) -> (Vec<Vec<u32>>, Vec<u32>, Vec<Vec<u32>>, Vec<u32>) {
-    let mut rng = StdRng::seed_from_u64(42); //rand::rng();
+    // let mut rng = StdRng::seed_from_u64(42); //rand::rng();
+    let mut rng = rand::rng();
     let n = m_X_data.len();
     let n_test = (n as f64 * test_size) as usize;
     let m_Xy_data = m_X_data
