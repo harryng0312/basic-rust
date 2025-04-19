@@ -1,35 +1,17 @@
-use crate::number_utils::calc_euclidean;
 use core::f64;
-use linfa::prelude::{Fit, Transformer};
-use linfa_preprocessing::PreprocessingError;
 use log::info;
 use maplit::hashmap;
-use ndarray::{Array1, Array2, Axis};
-use plotters::prelude::LogScalable;
 use rand;
 use rand::seq::IteratorRandom;
 use rand::{Rng, SeedableRng};
-use std::cmp::{max, min};
+use std::cmp::min;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::iter::Map;
-use utils::log::configuration::{init_logger, load_config_file};
+use utils::log::configuration::init_logger;
 
-fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingError> {
-    let mins = inp_arr.fold_axis(Axis(0), f64::MAX, |&a, &b| a.min(b));
-    let maxs = inp_arr.fold_axis(Axis(0), f64::MIN, |&a, &b| a.max(b));
-    let scaled_arr = inp_arr.mapv(|x| {
-        let col_min = mins[0];
-        let col_max = maxs[0];
-
-        (x - col_min) / (col_max - col_min)
-    });
-
-    Ok(scaled_arr)
-}
-
+#[derive(Debug, Clone, Default)]
 struct Node {
     feature_idx: Option<usize>,
     threshold: Option<f64>,
@@ -97,7 +79,7 @@ fn extract_keywords(data: &Vec<Vec<String>>, top_n: u32) -> Result<Vec<String>, 
 
 fn extract_features(msg: &String, keywords: &Vec<String>) -> Result<Vec<u32>, Box<dyn Error>> {
     let message = msg.to_lowercase();
-    let mut features: Vec<u32> = vec![0];
+    let mut features: Vec<u32> = vec![];
 
     for keyword in keywords {
         let count = message.matches(keyword).count();
@@ -110,16 +92,16 @@ fn preprocess_data(
     data: &Vec<Vec<String>>,
     keywords: &Vec<String>,
 ) -> Result<(Vec<Vec<u32>>, Vec<u32>), Box<dyn Error>> {
-    let mut X_data: Vec<Vec<u32>> = vec![];
+    let mut m_X_data: Vec<Vec<u32>> = vec![];
     let mut y_data: Vec<u32> = vec![];
     for row in data {
-        let features = extract_features(&row[1], keywords)?;
         let label = if "spam" == row[0] { 1 } else { 0 };
-        X_data.push(features);
+        let features = extract_features(&row[1], keywords)?;
+        m_X_data.push(features);
         y_data.push(label);
     }
 
-    Ok((X_data, y_data))
+    Ok((m_X_data, y_data))
 }
 fn calculate_entropy(labels: &Vec<u32>) -> f64 {
     let len_n = labels.len();
@@ -129,7 +111,7 @@ fn calculate_entropy(labels: &Vec<u32>) -> f64 {
     let unq_labels: HashSet<u32> = labels.iter().map(|x| *x).collect::<HashSet<u32>>();
     let mut entropy = 0.0;
     for label in unq_labels {
-        let label_count = labels.iter().filter(|&x| *x == label).count() as f64;
+        let label_count = labels.iter().filter(|&x| x == &label).count() as f64;
         let p = label_count / len_n as f64;
         entropy -= p * p.log2();
     }
@@ -155,7 +137,7 @@ fn calculate_infomation_gain(
 
     // calculate parent - current entropy
     let parent_entropy = calculate_entropy(y_train);
-
+    // info!("parent_entropy: {} at feature_idx:{}", parent_entropy, feature_idx);
     // split left and right by entropy
     for (data_row, label_row) in m_X_train.iter().zip(y_train.iter()) {
         if data_row[feature_idx] as f64 <= threshold {
@@ -202,13 +184,17 @@ fn find_best_split(
         let mut values = m_X_train
             .iter()
             .map(|x| x[feature_idx])
+            .collect::<HashSet<u32>>()
+            .into_iter()
             .collect::<Vec<u32>>();
         values.sort_by(|a, b| a.cmp(b));
         // let value_curr_next = values.iter().zip(values.iter().skip(1));
+        // info!("values.len:{}", values.len());
         for pair in values.windows(2) {
             let threshold = (pair[0] + pair[1]) as f64 / 2.0;
             let (inf_gain, left_data, left_labels, right_data, right_labels) =
                 calculate_infomation_gain(m_X_train, y_train, feature_idx, threshold);
+            // info!("feature_idx:{}, threshold:{}, inf_gain:{}, pair:{:?}", feature_idx, threshold, inf_gain, pair);
             if inf_gain > max_gain {
                 max_gain = inf_gain;
                 best_feature_idx = Some(feature_idx);
@@ -239,7 +225,9 @@ fn build_tree(
     max_depth: u32,
 ) -> Node {
     let mut labels_set: HashSet<u32> = y_train.iter().map(|x| *x).collect::<HashSet<u32>>();
+    // info!("labels_set {:?}", labels_set);
     if labels_set.len() == 1 {
+        // info!("labels_set {:?}", labels_set);
         return Node {
             feature_idx: None,
             threshold: None,
@@ -253,33 +241,34 @@ fn build_tree(
         let majority_class = label_set_iter
             .max_by_key(|&x| labels_set.iter().filter(|&y| *y == *x).count())
             .unwrap();
+        // info!("majority_class {:?}", majority_class);
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.as_f64()),
+            value: Some(majority_class.to_owned() as f64),
             left: None,
             right: None,
         };
     }
-
+    // info!("labels_set {:?}", labels_set);
     let (feature_idx, threshold, max_gain, left_data, left_labels, right_data, right_labels) =
         find_best_split(m_X_train, y_train);
-
+    // info!("feature_idx {:?}, threshold:{}, max_gain:{}", feature_idx, threshold, max_gain);
     // no gain
     if max_gain <= 0.0 {
         let label_set_iter = labels_set.iter();
         let majority_class = label_set_iter
             .max_by_key(|&x| labels_set.iter().filter(|&y| *y == *x).count())
             .unwrap();
+        // info!("majority_class {:?}", majority_class);
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.as_f64()),
+            value: Some(majority_class.to_owned() as f64),
             left: None,
             right: None,
         };
     }
-
     // gain
     let left_node = build_tree(&left_data, &left_labels, curr_depth + 1, max_depth);
     let right_node = build_tree(&right_data, &right_labels, curr_depth + 1, max_depth);
@@ -294,7 +283,6 @@ fn build_tree(
 }
 
 fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> f64 {
-
     if let Some(tree) = tree {
         if tree.value.is_some() {
             return tree.value.unwrap();
@@ -306,31 +294,31 @@ fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> f64 {
         }
     }
 
-    -1.0
+    0.0
 }
 fn train_test_split(
-    mX_data: &Vec<Vec<u32>>,
+    m_X_data: &Vec<Vec<u32>>,
     y_data: &Vec<u32>,
     test_size: f64,
 ) -> (Vec<Vec<u32>>, Vec<u32>, Vec<Vec<u32>>, Vec<u32>) {
     let mut rng = rand::rng();
-    let n = mX_data.len();
+    let n = m_X_data.len();
     let n_test = (n as f64 * test_size) as usize;
-    let mXy_data = mX_data
+    let m_Xy_data = m_X_data
         .into_iter()
         .zip(y_data.iter())
         .collect::<Vec<(&Vec<u32>, &u32)>>();
-    let rand_test_indices = mXy_data
+    let rand_test_indices = m_Xy_data
         .iter()
         .choose_multiple(&mut rng, n_test)
         .into_iter()
         .collect::<Vec<&(&Vec<u32>, &u32)>>();
-    let xy_train = mXy_data
+    let xy_train = m_Xy_data
         .iter()
         .filter(|x| !rand_test_indices.contains(x))
         .map(|x| x.to_owned())
         .collect::<Vec<(&Vec<u32>, &u32)>>();
-    let xy_test = mXy_data
+    let xy_test = m_Xy_data
         .iter()
         .filter(|x| rand_test_indices.contains(x))
         .map(|x| x.to_owned())
@@ -353,33 +341,51 @@ fn train_test_split(
     )
 }
 
-fn decision_tree() -> Result<(), Box<dyn Error>> {
+fn print_tree(keywords: &Vec<String>, node: &Option<Box<Node>>, indent: &str) {
+    if let Some(node) = node {
+        if node.value.is_some() {
+            info!("Leaf: {}", node.value.unwrap());
+        } else {
+            info!(
+                "{}Feature '{}' count <= {}",
+                indent,
+                keywords[node.feature_idx.unwrap()],
+                node.threshold.unwrap()
+            );
+            print_tree(keywords, &node.left, format!("{}L:", indent).as_str());
+            print_tree(keywords, &node.right, format!("{}R:", indent).as_str());
+        }
+    }
+}
+
+fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     init_logger();
     const FILE_NAME: &str = "data/email/spam.csv";
-    const TOP_N: usize = 2000;
+    const TOP_N: u32 = 20;
     // read csv file
     let rows: Vec<Vec<String>> = read_from_csv(FILE_NAME)?;
     // info!("Rows{}:\n{:?}", TOP_N, &rows[0..5]);
 
     // extract keywords
-    let keywords = extract_keywords(&rows, 2000)?;
+    let keywords = extract_keywords(&rows, TOP_N)?;
     // info!("Keywords {}:\n{:?}", TOP_N, &keywords[0..TOP_N]);
 
     // preprocess data
-    let (m_X_train, y_train) = preprocess_data(&rows, &keywords)?;
+    let (m_X_data, y_data) = preprocess_data(&rows, &keywords)?;
     // info!("X_train {:?}", &X_train[0]);
     // info!("y_train {:?}", &y_train[1]);
 
     // train test split
-    let (m_X_train, y_train, m_X_test, y_test) = train_test_split(&X_train, &y_train, 0.2);
-    // info!("X_train:{:?}, y_train:{:?}", X_train.len(), y_train.len());
-    // info!("X_test:{:?}, y_test:{:?}", X_test.len(), y_test.len());
+    let (m_X_train, y_train, m_X_test, y_test) = train_test_split(&m_X_data, &y_data, 0.2);
+    info!("X_train:{:?}, y_train:{:?}", m_X_train.len(), y_train.len());
+    info!("X_test:{:?}, y_test:{:?}", m_X_test.len(), y_test.len());
 
     // build decision tree
-    let tree = build_tree(&m_X_train, &y_train, 0, 10);
-
+    const MAX_DEPTH: u32 = 3;
+    let tree = build_tree(&m_X_train, &y_train, 0, MAX_DEPTH);
+    print_tree(&keywords, &Some(Box::new(tree)), "");
     // test
-    let opt_tree = Some(Box::new(tree));
+    // let opt_tree = Some(Box::new(tree));
 
     // predict and test
 
@@ -388,26 +394,22 @@ fn decision_tree() -> Result<(), Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::decision_tree::decision_tree;
+    use crate::decision_tree::make_decision_tree;
     use log::info;
     use std::collections::HashSet;
     use utils::log::configuration::init_logger;
 
     #[test]
     fn test_decision_tree() {
-        _ = decision_tree();
+        _ = make_decision_tree();
     }
 
     #[test]
     fn test_min_max_scale() {
         init_logger();
-        let mut set = HashSet::new();
-        set.insert("apple");
-        set.insert("banana");
-        set.insert("cherry");
-
-        let max = set.into_iter().max_by_key(|&x| x.len()).unwrap();
-
-        info!("max: {}", max);
+        let n_features = 10;
+        for feature_idx in 0..n_features {
+            info!("feature_idx:{}", feature_idx);
+        }
     }
 }
