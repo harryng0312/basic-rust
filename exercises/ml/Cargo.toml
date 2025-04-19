@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+utils = { path = "../utils" }
+maplit = "^1"
 ndarray = "^0"
 rand = "^0"
 linfa = "^0"
@@ -11,3 +13,4 @@ linfa = "^0"
 linfa-preprocessing = "^0"
 smartcore = "^0"
 plotters="^0"
+log = "0.4.27"
