@@ -2,7 +2,8 @@ use core::f64;
 use log::info;
 use maplit::hashmap;
 use rand;
-use rand::seq::IteratorRandom;
+use rand::rngs::StdRng;
+use rand::seq::index::sample;
 use rand::{Rng, SeedableRng};
 use std::cmp::min;
 use std::collections::{HashMap, HashSet};
@@ -15,7 +16,7 @@ use utils::log::configuration::init_logger;
 struct Node {
     feature_idx: Option<usize>,
     threshold: Option<f64>,
-    value: Option<f64>,
+    value: Option<u32>,
     left: Option<Box<Node>>,
     right: Option<Box<Node>>,
 }
@@ -231,7 +232,7 @@ fn build_tree(
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(1.0),
+            value: Some(1u32),
             left: None,
             right: None,
         };
@@ -245,7 +246,7 @@ fn build_tree(
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.to_owned() as f64),
+            value: Some(majority_class.to_owned()),
             left: None,
             right: None,
         };
@@ -264,7 +265,7 @@ fn build_tree(
         return Node {
             feature_idx: None,
             threshold: None,
-            value: Some(majority_class.to_owned() as f64),
+            value: Some(majority_class.to_owned()),
             left: None,
             right: None,
         };
@@ -282,7 +283,7 @@ fn build_tree(
     }
 }
 
-fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> f64 {
+fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> u32 {
     if let Some(tree) = tree {
         if tree.value.is_some() {
             return tree.value.unwrap();
@@ -294,35 +295,32 @@ fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> f64 {
         }
     }
 
-    0.0
+    2
 }
 fn train_test_split(
     m_X_data: &Vec<Vec<u32>>,
     y_data: &Vec<u32>,
     test_size: f64,
 ) -> (Vec<Vec<u32>>, Vec<u32>, Vec<Vec<u32>>, Vec<u32>) {
-    let mut rng = rand::rng();
+    let mut rng = StdRng::seed_from_u64(42); //rand::rng();
     let n = m_X_data.len();
     let n_test = (n as f64 * test_size) as usize;
     let m_Xy_data = m_X_data
         .into_iter()
         .zip(y_data.iter())
         .collect::<Vec<(&Vec<u32>, &u32)>>();
-    let rand_test_indices = m_Xy_data
+    let rand_test_indices = sample(&mut rng, n, n_test)
         .iter()
-        .choose_multiple(&mut rng, n_test)
-        .into_iter()
-        .collect::<Vec<&(&Vec<u32>, &u32)>>();
-    let xy_train = m_Xy_data
-        .iter()
-        .filter(|x| !rand_test_indices.contains(x))
-        .map(|x| x.to_owned())
-        .collect::<Vec<(&Vec<u32>, &u32)>>();
-    let xy_test = m_Xy_data
-        .iter()
-        .filter(|x| rand_test_indices.contains(x))
-        .map(|x| x.to_owned())
-        .collect::<Vec<(&Vec<u32>, &u32)>>();
+        .collect::<HashSet<usize>>();
+    let mut xy_train: Vec<(&Vec<u32>, &u32)> = vec![];
+    let mut xy_test: Vec<(&Vec<u32>, &u32)> = vec![];
+    for i in 0..n {
+        if !rand_test_indices.contains(&i) {
+            xy_train.push(m_Xy_data[i]);
+        } else {
+            xy_test.push(m_Xy_data[i]);
+        }
+    }
 
     (
         xy_train
@@ -361,7 +359,8 @@ fn print_tree(keywords: &Vec<String>, node: &Option<Box<Node>>, indent: &str) {
 fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     init_logger();
     const FILE_NAME: &str = "data/email/spam.csv";
-    const TOP_N: u32 = 20;
+    const TOP_N: u32 = 200;
+    const MAX_DEPTH: u32 = 3;
     // read csv file
     let rows: Vec<Vec<String>> = read_from_csv(FILE_NAME)?;
     // info!("Rows{}:\n{:?}", TOP_N, &rows[0..5]);
@@ -381,13 +380,23 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     info!("X_test:{:?}, y_test:{:?}", m_X_test.len(), y_test.len());
 
     // build decision tree
-    const MAX_DEPTH: u32 = 3;
     let tree = build_tree(&m_X_train, &y_train, 0, MAX_DEPTH);
-    print_tree(&keywords, &Some(Box::new(tree)), "");
+    let tree_some = Some(Box::new(tree.clone()));
+    print_tree(&keywords, &tree_some, "");
     // test
     // let opt_tree = Some(Box::new(tree));
 
-    // predict and test
+    // test
+    let mut correct_count = 0u32;
+    for (sample, label) in m_X_test.iter().zip(y_test.iter()) {
+        let pred = predict(&tree_some, sample);
+        if pred == *label {
+            correct_count += 1;
+        }
+    }
+    let accuracy = correct_count as f64 / m_X_test.len() as f64;
+    info!("Accuracy: {:.2}", accuracy * 100.0);
+    // predict
 
     Ok(())
 }
@@ -396,7 +405,6 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
 mod tests {
     use crate::decision_tree::make_decision_tree;
     use log::info;
-    use std::collections::HashSet;
     use utils::log::configuration::init_logger;
 
     #[test]
