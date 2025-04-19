@@ -4,6 +4,7 @@ extern crate core;
 mod nd_array;
 mod number_utils;
 mod plot;
+mod decision_tree;
 
 #[cfg(test)]
 mod test {

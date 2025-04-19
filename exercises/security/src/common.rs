@@ -4,6 +4,8 @@ use rand::Rng;
 use std::error::Error;
 use std::io::{Cursor, Read};
 
+use rand_core::{OsRng, RngCore};
+
 pub fn to_base64(data: &[u8]) -> Result<String, Box<dyn Error>> {
     let mut reader = ToBase64Reader::new(Cursor::new(data));
     // let mut reader = ToBase64Reader::new(data);
@@ -25,6 +27,13 @@ pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> Result<(), Box<dyn Error>> {
     // thread_rng.fill(&mut *rand_v);
     rand_bytes(&mut *rand_v).map_err(|e| Box::new(e) as Box<dyn Error>)
     // Ok(())
+}
+
+pub fn gen_secured_random_byte_arr(arr_inp: &mut [u8]) -> Result<(), Box<dyn Error>> {
+    // let mut rand_v: Vec<u8> = vec![0u8; arr_len];
+    OsRng.fill_bytes(arr_inp);
+    // Ok(rand_v)
+    Ok(())
 }
 
 #[cfg(test)]

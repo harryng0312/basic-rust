@@ -58,7 +58,7 @@ fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, Box<dyn Error>> {
     Ok(array2)
 }
 
-fn create_ndarray() -> Result<(), Box<dyn Error>> {
+pub(crate) fn create_ndarray() -> Result<(), Box<dyn Error>> {
     const NO_ROWS: usize = 7;
     const NO_COLS: usize = 5;
     let input_size = 784;

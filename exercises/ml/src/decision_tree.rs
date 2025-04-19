@@ -1,19 +1,21 @@
-use core::f64;
 use crate::number_utils::calc_euclidean;
+use core::f64;
+use linfa::prelude::{Fit, Transformer};
 use linfa_preprocessing::PreprocessingError;
 use ndarray::{Array1, Array2, Axis};
 use rand;
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 
 
 fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingError> {
     // let dataset = Dataset::from(inp_arr);
     // let targets: Array1<usize> = Array1::zeros(inp_arr.shape()[0]);
-    // let mut records = inp_arr.clone();
-    // let targets = Array::zeros(records.nrows());
-    // let dataset = Dataset::new(records, targets);
-    // let min_max_params = LinearScaler::min_max_range(0.0, 1.0).fit(&dataset)?;
 
+    // let records: Array2<f64> = inp_arr.to_owned(); // clone data
+    // let targets: Array1<u32> = Array1::zeros(records.nrows());
+    // let dataset = Dataset::from(records); // Dataset::new(records, targets);
+    // let min_max_params = LinearScaler::min_max_range(0.0, 1.0).fit(&dataset)?;
+    //
     // Ok(min_max_params
     //     .transform(dataset)
     //     .map(|x| x as f64)
@@ -32,7 +34,7 @@ fn min_max_scale(inp_arr: &Array2<f64>) -> Result<Array2<f64>, PreprocessingErro
     let scaled_arr = inp_arr.mapv(|x| {
         let col_min = mins[0] as f64;
         let col_max = maxs[0] as f64;
-        
+
         (x as f64 - col_min) / (col_max - col_min)
     });
 
@@ -44,11 +46,11 @@ fn create_ndarray() -> Result<(), PreprocessingError> {
     const NO_COLS: usize = 5;
     let input_size = 784;
     let output_size = 2048;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rngs::StdRng::seed_from_u64(42);
     let limit = (6.0 / (input_size + output_size) as f32).sqrt();
     let inp_arr: Array2<i32> = Array2::<i32>::from_shape_fn((NO_ROWS, NO_COLS), |(_, i)| {
         // rng.gen_range(-limit..=limit)
-        rng.gen_range(0..100)
+        rng.random_range(0..100)
     });
     println!("a matrix: {:?}\ntranspose:{:?}", inp_arr, inp_arr.t());
     let inp_arr = min_max_scale(&inp_arr.mapv(|x| x as f64))?;

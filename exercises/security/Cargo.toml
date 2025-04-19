@@ -11,3 +11,9 @@ openssl = "^0"
 rand = "^0"
 libc = "^0"
 
+p256 = { version = "^0", features = ["ecdsa", "sha256"] }
+k256 = { version = "^0", features = ["ecdsa", "sha256"] }
+rand_core = { version = "^0", features = ["getrandom"] }
+pem = "^3"
+generic-array = "1.2.0"
+
