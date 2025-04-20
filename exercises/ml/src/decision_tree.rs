@@ -10,6 +10,7 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::time::Instant;
 use utils::log::configuration::init_logger;
 
 #[derive(Debug, Clone, Default)]
@@ -187,7 +188,9 @@ fn find_best_split(
             .map(|x| x[feature_idx])
             .collect::<HashSet<u32>>();
         let mut values = feature_idx_set.iter().collect::<Vec<&u32>>();
-        values.sort();
+        // values.sort();
+        // values.sort_by_key(|&&x| std::cmp::Reverse(x));
+        values.sort_by_key(|&&x| x);
         // let value_curr_next = values.iter().zip(values.iter().skip(1));
         // info!("values.len:{}", values.len());
         for pair in values.windows(2) {
@@ -382,8 +385,11 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     info!("X_test:{:?}, y_test:{:?}", m_x_test.len(), y_test.len());
 
     // build decision tree
+    let start = Instant::now();
     let tree = build_tree(&m_x_train, &y_train, 0, MAX_DEPTH);
+    let end = Instant::now();
     let tree_some = Some(Box::new(tree.clone()));
+    info!("Build tree cost time: {:.3} sec", (end - start).as_secs_f64());
     print_tree(&keywords, &tree_some, "");
     // test
     // let opt_tree = Some(Box::new(tree));
@@ -399,6 +405,10 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     let accuracy = correct_count as f64 / m_x_test.len() as f64;
     info!("Accuracy: {:.2}", accuracy * 100.0);
     // predict
+    let new_msg = "Free tickets to win a prize! Call now!";
+    let new_sample = extract_features(&new_msg.to_string(), &keywords)?;
+    let prediction = predict(&tree_some, &new_sample);
+    info!("Prediction: {}: {}", new_msg, if prediction == 1 { "spam" } else { "ham" });
 
     Ok(())
 }
