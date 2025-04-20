@@ -93,26 +93,26 @@ fn preprocess_data(
     data: &Vec<Vec<String>>,
     keywords: &Vec<String>,
 ) -> Result<(Vec<Vec<u32>>, Vec<u32>), Box<dyn Error>> {
-    let mut m_X_data: Vec<Vec<u32>> = vec![];
+    let mut m_x_data: Vec<Vec<u32>> = vec![];
     let mut y_data: Vec<u32> = vec![];
     for row in data {
         let label = if "spam" == row[0] { 1 } else { 0 };
         let features = extract_features(&row[1], keywords)?;
-        m_X_data.push(features);
+        m_x_data.push(features);
         y_data.push(label);
     }
 
-    Ok((m_X_data, y_data))
+    Ok((m_x_data, y_data))
 }
 fn calculate_entropy(labels: &Vec<u32>) -> f64 {
     let len_n = labels.len();
     if len_n == 0 {
         return 0.0;
     }
-    let unq_labels: HashSet<u32> = labels.iter().map(|x| *x).collect::<HashSet<u32>>();
+    let unq_labels= labels.iter().map(|&x| x).collect::<HashSet<u32>>();
     let mut entropy = 0.0;
     for label in unq_labels {
-        let label_count = labels.iter().filter(|&x| x == &label).count() as f64;
+        let label_count = labels.iter().filter(|&&x| x == label).count() as f64;
         let p = label_count / len_n as f64;
         entropy -= p * p.log2();
     }
@@ -121,12 +121,12 @@ fn calculate_entropy(labels: &Vec<u32>) -> f64 {
 }
 
 fn calculate_infomation_gain(
-    m_X_train: &Vec<Vec<u32>>,
+    m_x_train: &Vec<Vec<u32>>,
     y_train: &Vec<u32>,
     feature_idx: usize,
     threshold: f64,
 ) -> (f64, Vec<Vec<u32>>, Vec<u32>, Vec<Vec<u32>>, Vec<u32>) {
-    let n = m_X_train.len();
+    let n = m_x_train.len();
     let mut inf_gain = 0.0;
     let mut left_data = vec![];
     let mut left_labels = vec![];
@@ -140,7 +140,7 @@ fn calculate_infomation_gain(
     let parent_entropy = calculate_entropy(y_train);
     // info!("parent_entropy: {} at feature_idx:{}", parent_entropy, feature_idx);
     // split left and right by entropy
-    for (data_row, label_row) in m_X_train.iter().zip(y_train.iter()) {
+    for (data_row, label_row) in m_x_train.iter().zip(y_train.iter()) {
         if data_row[feature_idx] as f64 <= threshold {
             left_data.push(data_row.to_owned());
             left_labels.push(label_row.to_owned());
@@ -161,7 +161,7 @@ fn calculate_infomation_gain(
 }
 
 fn find_best_split(
-    m_X_train: &Vec<Vec<u32>>,
+    m_x_train: &Vec<Vec<u32>>,
     y_train: &Vec<u32>,
 ) -> (
     usize,
@@ -172,7 +172,7 @@ fn find_best_split(
     Vec<Vec<u32>>,
     Vec<u32>,
 ) {
-    let mut max_gain = -1f64;
+    let mut max_gain = -1.0;
     let mut best_feature_idx: Option<usize> = None;
     let mut best_threshold: Option<f64> = None;
     let mut best_left_data: Vec<Vec<u32>> = vec![];
@@ -180,21 +180,20 @@ fn find_best_split(
     let mut best_right_data: Vec<Vec<u32>> = vec![];
     let mut best_right_labels: Vec<u32> = vec![];
 
-    let n_features = m_X_train[0].len();
+    let n_features = m_x_train[0].len();
     for feature_idx in 0..n_features {
-        let mut values = m_X_train
+        let feature_idx_set = m_x_train
             .iter()
             .map(|x| x[feature_idx])
-            .collect::<HashSet<u32>>()
-            .into_iter()
-            .collect::<Vec<u32>>();
-        values.sort_by(|a, b| a.cmp(b));
+            .collect::<HashSet<u32>>();
+        let mut values = feature_idx_set.iter().collect::<Vec<&u32>>();
+        values.sort();
         // let value_curr_next = values.iter().zip(values.iter().skip(1));
         // info!("values.len:{}", values.len());
         for pair in values.windows(2) {
             let threshold = (pair[0] + pair[1]) as f64 / 2.0;
             let (inf_gain, left_data, left_labels, right_data, right_labels) =
-                calculate_infomation_gain(m_X_train, y_train, feature_idx, threshold);
+                calculate_infomation_gain(m_x_train, y_train, feature_idx, threshold);
             // info!("feature_idx:{}, threshold:{}, inf_gain:{}, pair:{:?}", feature_idx, threshold, inf_gain, pair);
             if inf_gain > max_gain {
                 max_gain = inf_gain;
@@ -220,12 +219,12 @@ fn find_best_split(
 }
 
 fn build_tree(
-    m_X_train: &Vec<Vec<u32>>,
+    m_x_train: &Vec<Vec<u32>>,
     y_train: &Vec<u32>,
     curr_depth: u32,
     max_depth: u32,
 ) -> Node {
-    let mut labels_set: HashSet<u32> = y_train.iter().map(|x| *x).collect::<HashSet<u32>>();
+    let mut labels_set = y_train.iter().map(|x| *x).collect::<HashSet<u32>>();
     // info!("labels_set {:?}", labels_set);
     if labels_set.len() == 1 {
         // info!("labels_set {:?}", labels_set);
@@ -241,7 +240,7 @@ fn build_tree(
     if curr_depth >= max_depth {
         //
         let majority = label_set_iter
-            .max_by_key(|&x| y_train.iter().filter(|&y| *y == *x).count())
+            .max_by_key(|&x| y_train.iter().filter(|&y| y == x).count())
             .unwrap()
             .to_owned();
         // info!("majority_class {:?}", majority_class);
@@ -255,13 +254,13 @@ fn build_tree(
     }
     // info!("labels_set {:?}", labels_set);
     let (feature_idx, threshold, max_gain, left_data, left_labels, right_data, right_labels) =
-        find_best_split(m_X_train, y_train);
+        find_best_split(m_x_train, y_train);
     // info!("feature_idx {:?}, threshold:{}, max_gain:{}", feature_idx, threshold, max_gain);
     // no gain
     if max_gain <= 0.0 {
         // let label_set_iter = labels_set.iter();
         let majority = label_set_iter
-            .max_by_key(|&x| y_train.iter().filter(|&y| *y == *x).count())
+            .max_by_key(|&x| y_train.iter().filter(|&y| y == x).count())
             .unwrap()
             .to_owned();
         // info!("majority_class {:?}", majority_class);
@@ -297,20 +296,19 @@ fn predict(tree: &Option<Box<Node>>, sample: &Vec<u32>) -> u32 {
             return predict(&tree.right, sample);
         }
     }
-
-    0
+    2
 }
 fn train_test_split(
-    m_X_data: &Vec<Vec<u32>>,
+    m_x_data: &Vec<Vec<u32>>,
     y_data: &Vec<u32>,
     test_size: f64,
 ) -> (Vec<Vec<u32>>, Vec<u32>, Vec<Vec<u32>>, Vec<u32>) {
-    // let mut rng = StdRng::seed_from_u64(42); //rand::rng();
-    let mut rng = rand::rng();
-    let n = m_X_data.len();
+    let mut rng = StdRng::seed_from_u64(48);
+    // let mut rng = rand::rng();
+    let n = m_x_data.len();
     let n_test = (n as f64 * test_size) as usize;
-    let m_Xy_data = m_X_data
-        .into_iter()
+    let m_xy_data = m_x_data
+        .iter()
         .zip(y_data.iter())
         .collect::<Vec<(&Vec<u32>, &u32)>>();
     let rand_test_indices = sample(&mut rng, n, n_test)
@@ -320,9 +318,9 @@ fn train_test_split(
     let mut xy_test: Vec<(&Vec<u32>, &u32)> = vec![];
     for i in 0..n {
         if !rand_test_indices.contains(&i) {
-            xy_train.push(m_Xy_data[i]);
+            xy_train.push(m_xy_data[i]);
         } else {
-            xy_test.push(m_Xy_data[i]);
+            xy_test.push(m_xy_data[i]);
         }
     }
 
@@ -374,17 +372,17 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     // info!("Keywords {}:\n{:?}", TOP_N, &keywords[0..TOP_N]);
 
     // preprocess data
-    let (m_X_data, y_data) = preprocess_data(&rows, &keywords)?;
+    let (m_x_data, y_data) = preprocess_data(&rows, &keywords)?;
     // info!("X_train {:?}", &X_train[0]);
     // info!("y_train {:?}", &y_train[1]);
 
     // train test split
-    let (m_X_train, y_train, m_X_test, y_test) = train_test_split(&m_X_data, &y_data, 0.2);
-    info!("X_train:{:?}, y_train:{:?}", m_X_train.len(), y_train.len());
-    info!("X_test:{:?}, y_test:{:?}", m_X_test.len(), y_test.len());
+    let (m_x_train, y_train, m_x_test, y_test) = train_test_split(&m_x_data, &y_data, 0.2);
+    info!("X_train:{:?}, y_train:{:?}", m_x_train.len(), y_train.len());
+    info!("X_test:{:?}, y_test:{:?}", m_x_test.len(), y_test.len());
 
     // build decision tree
-    let tree = build_tree(&m_X_train, &y_train, 0, MAX_DEPTH);
+    let tree = build_tree(&m_x_train, &y_train, 0, MAX_DEPTH);
     let tree_some = Some(Box::new(tree.clone()));
     print_tree(&keywords, &tree_some, "");
     // test
@@ -392,13 +390,13 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
 
     // test
     let mut correct_count = 0u32;
-    for (sample, label) in m_X_test.iter().zip(y_test.iter()) {
+    for (sample, label) in m_x_test.iter().zip(y_test.iter()) {
         let pred = predict(&tree_some, sample);
         if pred == *label {
             correct_count += 1;
         }
     }
-    let accuracy = correct_count as f64 / m_X_test.len() as f64;
+    let accuracy = correct_count as f64 / m_x_test.len() as f64;
     info!("Accuracy: {:.2}", accuracy * 100.0);
     // predict
 
