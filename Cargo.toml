@@ -7,6 +7,28 @@ exclude = []
 
 resolver = "2"
 
+[profile.dev]
+opt-level = 0           # "s", "z" or 0-3
+lto = false              # Link Time Optimization enabled
+codegen-units = 16       # build slower, code is more optimized (more is building faster, less is more optimized)
+panic = "unwind"         # abort or unwind - unwind for trace the errors
+strip = false            # remove debug mode
+
+[profile.fast-debug]
+inherits = "dev"
+opt-level = 1           # "s", "z" or 0-3
+lto = false             # Link Time Optimization enabled
+codegen-units = 16      # build slower, code is more optimized (more is building faster, less is more optimized)
+panic = "unwind"        # abort or unwind - unwind for trace the errors
+strip = false           # remove debug mode
+
+[profile.release]
+opt-level = 3           # "s", "z" or 0-3
+lto = true              # Link Time Optimization enabled
+codegen-units = 1       # build slower, code is more optimized (more is building faster, less is more optimized)
+panic = "abort"         # abort or unwind - unwind for trace the errors
+strip = true            # remove debug mode
+
 [package]
 name = "basic-rust"
 version = "0.1.0"

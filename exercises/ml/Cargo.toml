@@ -3,6 +3,13 @@ name = "ml"
 version = "0.1.0"
 edition = "2021"
 
+#[profile.release]
+#opt-level = 0           # "s", "z" or 0-3
+#lto = true              # Link Time Optimization enabled
+#codegen-units = 1       # build slower, code is more optimized
+#panic = "abort"         # abort or unwind - unwind for trace the errors
+#strip = true            # remove debug mode
+
 [dependencies]
 utils = { path = "../utils" }
 maplit = "^1"
