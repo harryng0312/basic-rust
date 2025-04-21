@@ -3,12 +3,18 @@ name = "ml"
 version = "0.1.0"
 edition = "2021"
 
-#[profile.release]
-#opt-level = 0           # "s", "z" or 0-3
-#lto = true              # Link Time Optimization enabled
-#codegen-units = 1       # build slower, code is more optimized
-#panic = "abort"         # abort or unwind - unwind for trace the errors
-#strip = true            # remove debug mode
+[lib]
+name = "ml"
+path = "src/lib.rs"
+crate-type = ["rlib", "dylib", "staticlib"]
+
+# [[bin]]
+# name = "my_app"
+# path = "src/main.rs"
+
+# [[bin]]
+# name = "other_app"
+# path = "src/bin/other.rs"
 
 [dependencies]
 utils = { path = "../utils" }
