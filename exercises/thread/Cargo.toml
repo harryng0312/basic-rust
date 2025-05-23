@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+utils = { path = "../utils" }
 chrono = "^0"
 rand = "^0"
 tokio = { version = "^1", features = ["time", "rt-multi-thread", "sync", "rt", "macros"] }
 async-std = "^1"
 async-channel = "^2"
+log = "0.4.27"
 

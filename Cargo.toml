@@ -8,7 +8,7 @@ exclude = []
 resolver = "2"
 
 [profile.dev]
-opt-level = 0           # "s", "z" or 0-3
+opt-level = 0            # "s", "z" or 0-3
 lto = false              # Link Time Optimization enabled
 codegen-units = 16       # build slower, code is more optimized (more is building faster, less is more optimized)
 panic = "unwind"         # abort or unwind - unwind for trace the errors
