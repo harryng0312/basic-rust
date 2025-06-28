@@ -6,6 +6,7 @@ use tokio::time::sleep;
 mod test {
     use log::info;
     use std::time::Duration;
+    use tokio::join;
     use tokio::runtime::Builder;
     use tokio::time::{sleep, Instant};
     use utils::log::configuration::init_logger;
@@ -35,6 +36,24 @@ mod test {
         rt.block_on(task).expect("Await to end all tasks");
 
         info!("test_basic_async_done");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn test_basic_async_tokio() {
+        init_logger();
+        let h1 = tokio::spawn(async {
+            sleep(Duration::from_secs_f32(1.5)).await;
+            1 + 2
+        });
+        let h2 = tokio::spawn(async {
+            sleep(Duration::from_secs_f32(2.5)).await;
+            3 + 4
+        });
+
+        let rs = join!(h1, h2);
+
+        assert_eq!(rs.0.unwrap(), 3);
+        assert_eq!(rs.1.unwrap(), 7);
     }
 }
 #[tokio::main(flavor = "multi_thread", worker_threads = 8)]

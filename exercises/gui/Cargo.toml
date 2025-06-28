@@ -1,7 +1,18 @@
 [package]
-name = "thread"
+name = "gui"
 version = "0.1.0"
 edition = "2021"
+
+#[lib]
+#name = "gui"
+#path = "src/lib.rs"
+##crate-type = ["rlib", "dylib", "staticlib"]
+#crate-type = ["rlib", "dylib"]
+
+[[bin]]
+name = "gui"
+path = "src/main.rs"
+
 
 [dependencies]
 utils = { path = "../utils" }
@@ -11,4 +22,5 @@ tokio = { version = "^1", features = ["time", "rt-multi-thread", "sync", "rt", "
 async-std = "^1"
 async-channel = "^2"
 log = "^0"
+druid = "^0"
 
