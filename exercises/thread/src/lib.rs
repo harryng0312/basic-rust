@@ -4,5 +4,6 @@ mod basic_thread_broadcast;
 mod basic_thread_sync;
 mod tokio_sync;
 mod tokio_async;
+mod tokio_semaphore;
 
 fn main() {}
