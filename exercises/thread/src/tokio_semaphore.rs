@@ -6,7 +6,7 @@ use tokio::time::{sleep, Duration};
 
 #[tokio::test]
 async fn test_semaphore() {
-    let semaphore = Arc::new(Semaphore::new(4)); // Giới hạn 4 concurrent jobs
+    let semaphore = Arc::new(Semaphore::new(4)); // 4 concurrent jobs
     let (tx, mut rx) = mpsc::channel::<u32>(100);
 
     // Producer
@@ -24,11 +24,11 @@ async fn test_semaphore() {
     let mut workers = FuturesUnordered::new();
 
     while let Some(job) = rx.recv().await {
-        let permit = semaphore.clone().acquire_owned().await.unwrap(); // ✅ Đúng ở đây
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
         workers.push(tokio::spawn(handle_job(job, permit)));
     }
 
-    // Đợi tất cả workers xong
+    // wait for all workers done
     while let Some(result) = workers.next().await {
         if let Ok(msg) = result {
             println!("Result: {}", msg);
