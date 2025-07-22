@@ -20,6 +20,8 @@ crate-type = ["rlib", "dylib", "staticlib"]
 utils = { path = "../utils" }
 maplit = "^1"
 ndarray = "^0"
+tract-onnx = "^0"
+tract-tensorflow = "^0"
 rand = "^0"
 linfa = "^0"
 #linfa-datasets = "^0"
