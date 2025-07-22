@@ -37,8 +37,8 @@ fn test_thread_joint() {
 async fn async_task(id: usize) {
     let mut sleep_duration = 0u64;
     {
-        let mut rand = rand::thread_rng();
-        sleep_duration = rand.gen_range(500..20_000);
+        let mut rand = rand::rng();
+        sleep_duration = rand.random_range(500..20_000);
     }
     println!("Task {} started", id);
     let start = Local::now();

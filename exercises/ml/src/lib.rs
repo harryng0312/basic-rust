@@ -5,6 +5,7 @@ mod nd_array;
 mod number_utils;
 mod plot;
 mod decision_tree;
+mod touch;
 
 #[cfg(test)]
 mod test {
