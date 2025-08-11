@@ -28,6 +28,15 @@ lto = true              # Link Time Optimization enabled
 codegen-units = 1       # build slower, code is more optimized (more is building faster, less is more optimized)
 panic = "abort"         # abort or unwind - unwind for trace the errors
 strip = true            # remove debug mode
+overflow-checks = false # remove check overflow
+
+[profile.bench]
+opt-level = 3           # "s", "z" or 0-3
+lto = true              # Link Time Optimization enabled
+codegen-units = 1       # build slower, code is more optimized (more is building faster, less is more optimized)
+panic = "abort"         # abort or unwind - unwind for trace the errors
+strip = true            # remove debug mode
+overflow-checks = false # remove check overflow
 
 [package]
 name = "basic-rust"
