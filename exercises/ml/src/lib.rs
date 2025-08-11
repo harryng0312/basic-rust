@@ -6,6 +6,7 @@ mod number_utils;
 mod plot;
 mod decision_tree;
 mod touch;
+mod matrix;
 
 #[cfg(test)]
 mod test {
