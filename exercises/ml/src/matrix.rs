@@ -150,8 +150,8 @@ mod tests {
         let args: Vec<String> = env::args().collect();
         // usage: cargo run --release -- --m 1024 --k 512 --n 2048 --reps 3 --seed 42
         let m = parse_arg(&args, "--m", 4096);
-        let k = parse_arg(&args, "--k", 1024);
-        let n = parse_arg(&args, "--n", 2048);
+        let k = parse_arg(&args, "--k", 2048);
+        let n = parse_arg(&args, "--n", 3072);
         let reps = parse_arg(&args, "--reps", 3);
         let seed = parse_arg(&args, "--seed", 12345) as u64;
 
