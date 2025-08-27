@@ -1,3 +1,8 @@
+use utils::log::configuration::init_logger;
+
+mod models;
+mod persistence;
+
 fn main() {
-    println!("Hello, world!");
+    init_logger();
 }

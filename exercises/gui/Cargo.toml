@@ -5,7 +5,7 @@ edition = "2021"
 
 #[lib]
 #name = "gui"
-#path = "src/lib.rs"
+#path = "src/mod"
 ##crate-type = ["rlib", "dylib", "staticlib"]
 #crate-type = ["rlib", "dylib"]
 

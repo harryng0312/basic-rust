@@ -9,3 +9,4 @@ env_logger = "^0"
 chrono = "^0"
 serde = {version = "^1", features = ["derive"]}
 bigdecimal = "^0"
+anyhow="^1"

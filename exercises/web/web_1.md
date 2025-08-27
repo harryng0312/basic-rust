@@ -43,7 +43,7 @@ use serde::{Deserialize, Serialize};
 use super::schema::users;
 
 #[derive(Queryable, Serialize)]
-pub struct User {
+pub struct user {
 pub id: i32,
 pub name: String,
 }
@@ -70,7 +70,7 @@ Router,
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use models::{User, NewUser};
+use models::{user, NewUser};
 use std::net::SocketAddr;
 
 type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -98,11 +98,11 @@ let pool = r2d2::Pool::builder()
 }
 
 // GET /users -> trả về toàn bộ user
-async fn list_users(Extension(pool): Extension<DbPool>) -> Json<Vec<User>> {
+async fn list_users(Extension(pool): Extension<DbPool>) -> Json<Vec<user>> {
 use crate::schema::users::dsl::*;
 let conn = pool.get().expect("Lấy connection thất bại");
 let results = users
-.load::<User>(&conn)
+.load::<user>(&conn)
 .expect("Không đọc được users");
 Json(results)
 }
@@ -120,7 +120,7 @@ let conn = pool.get().expect("Lấy connection thất bại");
         .execute(&conn)
         .expect("Không insert được");
 
-    "✅ User đã được thêm"
+    "✅ user đã được thêm"
 }
 
 
@@ -207,7 +207,7 @@ use serde::{Deserialize, Serialize};
 use super::schema::users;
 
 #[derive(Queryable, Serialize)]
-pub struct User {
+pub struct user {
 pub id: i32,
 pub name: String,
 }
@@ -234,7 +234,7 @@ Router,
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use models::{User, NewUser};
+use models::{user, NewUser};
 use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
 
@@ -264,11 +264,11 @@ let manager = ConnectionManager::<PgConnection>::new(database_url);
 }
 
 // GET /users
-async fn list_users(Extension(pool): Extension<DbPool>) -> Json<Vec<User>> {
+async fn list_users(Extension(pool): Extension<DbPool>) -> Json<Vec<user>> {
 use crate::schema::users::dsl::*;
 let conn = pool.get().expect("Lấy connection thất bại");
 let results = users
-.load::<User>(&conn)
+.load::<user>(&conn)
 .expect("Không đọc được users");
 Json(results)
 }
@@ -286,7 +286,7 @@ let conn = pool.get().expect("Lấy connection thất bại");
         .execute(&conn)
         .expect("Không insert được");
 
-    "✅ User đã được thêm"
+    "✅ user đã được thêm"
 }
 
 
