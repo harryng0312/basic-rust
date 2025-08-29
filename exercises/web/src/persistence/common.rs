@@ -23,7 +23,12 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
     // dotenv().ok();
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-    let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+    let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
+    let db_name = env::var("DB_NAME").map_err(|e| e)?;
+    let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
+    let db_password = env::var("DB_PASSWORD").map_err(|e| e)?;
+    let database_url = format!("postgres://{db_username}:{db_password}@{db_address}/{db_name}");
     let manager = diesel::r2d2::ConnectionManager::<RawDbConnection>::new(database_url);
 
     let pool = diesel::r2d2::Pool::builder()
@@ -35,8 +40,15 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
 }
 
 pub async fn create_async_conn_pool() -> AppResult<AsyncDbConnectionPool> {
+    let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
+    dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
+    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+    let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
+    let db_name = env::var("DB_NAME").map_err(|e| e)?;
+    let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
+    let db_password = env::var("DB_PASSWORD").map_err(|e| e)?;
     let manager = bb8_postgres::PostgresConnectionManager::new(
-        "host=localhost user=postgres password=123 dbname=mydb".parse()?,
+        format!("host={db_address} user={db_username} password={db_password} dbname={db_name}").parse()?,
         NoTls,
     );
     Ok(bb8::Pool::builder().max_size(15).build(manager).await?)
@@ -67,11 +79,13 @@ mod tests {
     use super::*;
     use crate::models::test_rec::test_recs::dsl::test_recs;
     use crate::models::test_rec::TestRecord;
-    use crate::models::user::users::dsl::users;
-    use crate::models::user::User;
-    use chrono::NaiveDateTime;
+    use chrono::{DateTime, NaiveDateTime, Utc};
     use diesel::{QueryDsl, RunQueryDsl};
-    use log::{error, info};
+    use log::info;
+    use tokio::pin;
+    use tokio_postgres::RowStream;
+    use tokio_postgres::types::ToSql;
+    use tokio_stream::StreamExt;
     use utils::log::configuration::init_logger;
 
     #[test]
@@ -95,20 +109,26 @@ mod tests {
         init_logger();
         let conn = get_async_connection().await?;
         info!("Start getting async connection from pool ...");
-        let rows = conn
-            .query_opt(
-                "SELECT id_, name_, available, created_at FROM test_rec where id_ = $1",
-                &[],
+        let now = Utc::now().naive_utc();
+        let mut rows: RowStream = conn
+            .query_raw(
+                "SELECT id_, name_, available, created_at FROM test_rec where created_at < $1",
+                // [&now],
+                std::iter::once(&now),
             )
             .await?;
-        rows.map(|row| {
-            let test_rec: TestRecord = TestRecord {
-                id: row.get("id_"),
-                name: row.get("name_"),
-                available: row.get("available"),
-                created_at: row.get::<_, NaiveDateTime>("created_at"),
-            };
-        });
+        pin!(rows);
+        while let Some(row) = rows.next().await {
+            if let Ok(row) = row {
+                let test_rec = TestRecord {
+                    id: row.get("id_"),
+                    name: row.get("name_"),
+                    available: row.get("available"),
+                    created_at: row.get::<_, NaiveDateTime>("created_at"),
+                };
+                info!("{:#?}", test_rec);
+            }
+        }
         Ok(())
     }
 }

@@ -6094,6 +6094,7 @@ dependencies = [
  "serde",
  "tokio",
  "tokio-postgres",
+ "tokio-stream",
  "utils",
 ]
 

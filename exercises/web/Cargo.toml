@@ -7,6 +7,7 @@ edition = "2021"
 utils = { path = "../utils" }
 tokio = { version = "^1", features = ["time", "rt-multi-thread", "sync", "rt", "macros"]}
 tokio-postgres = { version = "^0", features = ["with-uuid-0_8","with-chrono-0_4"] }
+tokio-stream = "^0"
 bb8 = "^0"
 bb8-postgres = "^0"
 #async-channel = "^2"
