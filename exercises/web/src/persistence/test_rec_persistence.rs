@@ -62,9 +62,12 @@ mod tests {
     #[test]
     fn test_find() {
         init_logger();
-        let mut _test_recs = find(0, 10).unwrap();
-        for _test_rec in _test_recs.iter_mut() {
-            info!("{:?}", _test_rec);
+        let n = 100;
+        for i in 0..n {
+            let mut _test_recs = find(0, 10).unwrap();
+            for _test_rec in _test_recs.iter_mut() {
+                info!("{:?}", _test_rec);
+            }
         }
     }
 

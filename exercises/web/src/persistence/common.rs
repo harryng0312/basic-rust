@@ -23,7 +23,7 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
     // dotenv().ok();
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
     let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
     let db_name = env::var("DB_NAME").map_err(|e| e)?;
     let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
@@ -42,16 +42,27 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
 pub async fn create_async_conn_pool() -> AppResult<AsyncDbConnectionPool> {
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
     let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
     let db_name = env::var("DB_NAME").map_err(|e| e)?;
     let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
     let db_password = env::var("DB_PASSWORD").map_err(|e| e)?;
+    let db_min_pool_size = env::var("DB_MIN_POOL_SIZE")
+        .unwrap_or("5".to_string())
+        .parse::<u32>()?;
+    let db_max_pool_size = env::var("DB_MAX_POOL_SIZE")
+        .unwrap_or("5".to_string())
+        .parse::<u32>()?;
     let manager = bb8_postgres::PostgresConnectionManager::new(
-        format!("host={db_address} user={db_username} password={db_password} dbname={db_name}").parse()?,
+        format!("host={db_address} user={db_username} password={db_password} dbname={db_name}")
+            .parse()?,
         NoTls,
     );
-    Ok(bb8::Pool::builder().max_size(15).build(manager).await?)
+    Ok(bb8::Pool::builder()
+        .min_idle(db_min_pool_size)
+        .max_size(db_max_pool_size)
+        .build(manager)
+        .await?)
 }
 
 pub fn get_connection() -> AppResult<DbConnection> {
@@ -79,12 +90,11 @@ mod tests {
     use super::*;
     use crate::models::test_rec::test_recs::dsl::test_recs;
     use crate::models::test_rec::TestRecord;
-    use chrono::{DateTime, NaiveDateTime, Utc};
+    use chrono::{NaiveDateTime, Utc};
     use diesel::{QueryDsl, RunQueryDsl};
     use log::info;
     use tokio::pin;
     use tokio_postgres::RowStream;
-    use tokio_postgres::types::ToSql;
     use tokio_stream::StreamExt;
     use utils::log::configuration::init_logger;
 
@@ -110,12 +120,11 @@ mod tests {
         let conn = get_async_connection().await?;
         info!("Start getting async connection from pool ...");
         let now = Utc::now().naive_utc();
-        let mut rows: RowStream = conn
+        let params: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> = vec![&now, &5i64];
+        let rows: RowStream = conn
             .query_raw(
-                "SELECT id_, name_, available, created_at FROM test_rec where created_at < $1",
-                // [&now],
-                std::iter::once(&now),
-            )
+                "SELECT id_, name_, available, created_at FROM test_rec where created_at < $1 order by id_ DESC limit $2",
+                params)
             .await?;
         pin!(rows);
         while let Some(row) = rows.next().await {
