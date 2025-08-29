@@ -119,13 +119,10 @@ mod tests {
         init_logger();
         let conn = get_async_connection().await?;
         info!("Start getting async connection from pool ...");
+        let sql = "SELECT id_, name_, available, created_at FROM test_rec where created_at < $1 order by id_ DESC limit $2";
         let now = Utc::now().naive_utc();
         let params: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> = vec![&now, &5i64];
-        let rows: RowStream = conn
-            .query_raw(
-                "SELECT id_, name_, available, created_at FROM test_rec where created_at < $1 order by id_ DESC limit $2",
-                params)
-            .await?;
+        let rows: RowStream = conn.query_raw(sql, params).await?;
         pin!(rows);
         while let Some(row) = rows.next().await {
             if let Ok(row) = row {
