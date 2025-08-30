@@ -3,4 +3,23 @@ name = "advanced"
 version = "0.1.0"
 edition = "2021"
 
+#[lib]
+#name = "gui"
+#path = "src/mod"
+##crate-type = ["rlib", "dylib", "staticlib"]
+#crate-type = ["rlib", "dylib"]
+
+[lib]
+proc-macro = true
+
+[[bin]]
+name="advanced"
+path = "src/main.rs"
+
 [dependencies]
+chrono={version = "^0", features = ["serde"]}
+serde = { version = "^1", features = ["derive"] }
+syn= {version="^1" , features = ["full"]}
+quote="^1"
+proc-macro2="^1"
+

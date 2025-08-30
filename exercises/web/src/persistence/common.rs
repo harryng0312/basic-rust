@@ -123,6 +123,7 @@ mod tests {
         let now = Utc::now().naive_utc();
         let params: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> = vec![&now, &5i64];
         let rows: RowStream = conn.query_raw(sql, params).await?;
+        let a: u64 = Default::default();
         pin!(rows);
         while let Some(row) = rows.next().await {
             if let Ok(row) = row {

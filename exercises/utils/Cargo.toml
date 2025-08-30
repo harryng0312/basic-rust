@@ -3,6 +3,8 @@ name = "utils"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+
 [dependencies]
 log = "^0"
 env_logger = "^0"

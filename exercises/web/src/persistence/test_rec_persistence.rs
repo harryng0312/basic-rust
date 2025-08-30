@@ -74,11 +74,6 @@ mod tests {
     // #[test]
     fn test_insert() {
         init_logger();
-        // let test_rec = TestRecord {
-        //     id: 0,
-        //     name: "".to_string(),
-        //     available: false,
-        // };
         let mut ls_test_recs: Vec<TestRecord> = vec![];
         for i in 1..=10 {
             // let _val = insert(&TestRecord {
