@@ -96,7 +96,7 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
             let fname = field.ident.as_ref().unwrap();
             let ftype = &field.ty;
 
-            let getter_name = syn::Ident::new(&format!("get_{}", fname), fname.span());
+            let getter_name = syn::Ident::new(&format!("{}", fname), fname.span());
             let setter_name = syn::Ident::new(&format!("set_{}", fname), fname.span());
 
             getters_setters.push(quote! {
