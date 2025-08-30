@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{parse_macro_input, AttributeArgs, Fields, ItemStruct, Lit, Meta, NestedMeta, Path};
 
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -8,20 +8,61 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
 
     let mut derives: Vec<Path> = Vec::new();
     for arg in args {
-        if let NestedMeta::Meta(Meta::NameValue(nv)) = arg {
-            if nv.path.is_ident("derive") {
-                if let Lit::Str(litstr) = &nv.lit {
-                    let tokens_str = litstr.value();
-                    for d in tokens_str.split(',') {
-                        let d = d.trim();
-                        if !d.is_empty() {
-                            let path: Path = syn::parse_str(d).unwrap();
-                            derives.push(path);
+        // if let NestedMeta::Meta(Meta::NameValue(nv)) = arg {
+        //     if nv.path.is_ident("derive") {
+        //         if let Lit::Str(litstr) = &nv.lit {
+        //             let tokens_str = litstr.value();
+        //             for d in tokens_str.split(',') {
+        //                 let d = d.trim();
+        //                 if !d.is_empty() {
+        //                     let path: Path = syn::parse_str(d).unwrap();
+        //                     derives.push(path);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        match arg {
+            NestedMeta::Meta(Meta::Path(path)) => {
+                // Ví dụ: #[record(SomeAttr)]
+                // println!("Found Path: {}", path.into_token_stream());
+                derives.push(path);
+            }
+            NestedMeta::Meta(Meta::NameValue(nv)) => {
+                // Ví dụ: #[record(extra = "yes")]
+                // let ident = nv.path.into_token_stream().to_string();
+                // let lit = nv.lit.into_token_stream().to_string();
+                // println!("Found NameValue: {} = {}", ident, lit);
+                if nv.path.is_ident("derive") {
+                    if let Lit::Str(litstr) = &nv.lit {
+                        let tokens_str = litstr.value();
+                        for d in tokens_str.split(',') {
+                            let d = d.trim();
+                            if !d.is_empty() {
+                                let path: Path = syn::parse_str(d).unwrap();
+                                derives.push(path);
+                            }
                         }
                     }
                 }
             }
-        }
+            NestedMeta::Meta(Meta::List(list)) => {
+                // Ví dụ: #[record(derive(Debug, Clone))]
+                let ident = list.path.into_token_stream().to_string();
+                // println!("Found List: {}", ident);
+
+                for nested2 in list.nested {
+                    match nested2 {
+                        NestedMeta::Meta(Meta::Path(path)) => {
+                            // println!("  List item Path: {}", path.into_token_stream());
+                            derives.push(path);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        };
     }
 
     // Nếu user không truyền derive thì thêm mặc định

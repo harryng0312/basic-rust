@@ -22,7 +22,8 @@ use chrono::{Local, NaiveDate};
     unused_unsafe
 )]
 // #[record(derive="Debug, Clone, Default")]
-#[record]
+// #[record]
+#[record(derive(Debug, Clone, Default))]
 // #[derive(Debug)]
 pub struct User {
     id: i64,
