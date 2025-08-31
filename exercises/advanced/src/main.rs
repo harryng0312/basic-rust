@@ -1,5 +1,16 @@
-use advanced::record;
-use chrono::{Local, NaiveDate};
+#[allow(
+    unused,
+    unused_mut,
+    unused_variables,
+    unused_imports,
+    unreachable_code,
+    unused_unsafe,
+    dead_code
+)]
+use advanced::{sum, record};
+// use chrono::{Local};
+use log::info;
+use utils::log::configuration::init_logger;
 
 // record! {serde,
 //     User {
@@ -13,32 +24,23 @@ use chrono::{Local, NaiveDate};
 //     username: String,
 //     dob: NaiveDate,
 // }}
-#[allow(
-    unused,
-    unused_mut,
-    unused_variables,
-    unused_imports,
-    unreachable_code,
-    unused_unsafe
-)]
+
 // #[record(derive="Debug, Clone, Default")]
 // #[record]
-#[record(derive(Debug, Clone, Default))]
+// #[record(derive(Debug, Clone, Default))]
 // #[derive(Debug)]
-pub struct User {
-    id: i64,
-    username: String,
-    dob: NaiveDate,
-}
+// pub struct User {
+//     id: i64,
+//     username: String,
+//     dob: NaiveDate,
+// }
 
 fn main() {
-    let date_now = Local::now().date_naive();
-    let now = Local::now().naive_local();
+    init_logger();
+    // let date_now = Local::now().date_naive();
+    // let now = Local::now().naive_local();
+    let sum = sum!(200, 20);
+    info!("sum: {}", sum);
 
-    let user = User {
-        id: 1,
-        username: "".to_string(),
-        dob: date_now,
-    };
-    println!("{:?}", user);
+
 }

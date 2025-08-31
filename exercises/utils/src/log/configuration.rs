@@ -1,4 +1,4 @@
-use env_logger::{Builder, Env};
+use env_logger::{Builder};
 use log::LevelFilter;
 
 const CONFIG_FILE: &str = "config.toml";

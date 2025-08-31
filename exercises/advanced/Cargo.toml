@@ -17,6 +17,8 @@ name="advanced"
 path = "src/main.rs"
 
 [dependencies]
+utils = { path = "../utils" }
+log = "^0"
 chrono={version = "^0", features = ["serde"]}
 serde = { version = "^1", features = ["derive"] }
 syn= {version="^1" , features = ["full"]}

@@ -38,10 +38,12 @@ name = "advanced"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "log",
  "proc-macro2",
  "quote",
  "serde",
  "syn 1.0.109",
+ "utils",
 ]
 
 [[package]]

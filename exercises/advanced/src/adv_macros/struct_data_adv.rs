@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::{quote};
 use syn::{parse_macro_input, AttributeArgs, Fields, ItemStruct, Lit, Meta, NestedMeta, Path};
 
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -8,28 +8,14 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
 
     let mut derives: Vec<Path> = Vec::new();
     for arg in args {
-        // if let NestedMeta::Meta(Meta::NameValue(nv)) = arg {
-        //     if nv.path.is_ident("derive") {
-        //         if let Lit::Str(litstr) = &nv.lit {
-        //             let tokens_str = litstr.value();
-        //             for d in tokens_str.split(',') {
-        //                 let d = d.trim();
-        //                 if !d.is_empty() {
-        //                     let path: Path = syn::parse_str(d).unwrap();
-        //                     derives.push(path);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         match arg {
             NestedMeta::Meta(Meta::Path(path)) => {
-                // Ví dụ: #[record(SomeAttr)]
+                // ex: #[record(SomeAttr)]
                 // println!("Found Path: {}", path.into_token_stream());
                 derives.push(path);
             }
             NestedMeta::Meta(Meta::NameValue(nv)) => {
-                // Ví dụ: #[record(extra = "yes")]
+                // ex: #[record(extra = "yes")]
                 // let ident = nv.path.into_token_stream().to_string();
                 // let lit = nv.lit.into_token_stream().to_string();
                 // println!("Found NameValue: {} = {}", ident, lit);
@@ -47,8 +33,8 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
                 }
             }
             NestedMeta::Meta(Meta::List(list)) => {
-                // Ví dụ: #[record(derive(Debug, Clone))]
-                let ident = list.path.into_token_stream().to_string();
+                // ex: #[record(derive(Debug, Clone))]
+                // let ident = list.path.into_token_stream().to_string();
                 // println!("Found List: {}", ident);
 
                 for nested2 in list.nested {
@@ -65,19 +51,19 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
         };
     }
 
-    // Nếu user không truyền derive thì thêm mặc định
+    // there is no derive, then default:
     if derives.is_empty() {
         derives.push(syn::parse_str("Debug").unwrap());
         derives.push(syn::parse_str("Clone").unwrap());
         derives.push(syn::parse_str("serde::Serialize").unwrap());
         derives.push(syn::parse_str("serde::Deserialize").unwrap());
 
-        // Nếu struct có Named fields thì kiểm tra Default
+        // if struct has Named fields, then check Default
         if let Fields::Named(named) = &input.fields {
             let mut all_have_default = true;
             for _ in named.named.iter() {
-                // Không check type phức tạp, chỉ assume tất cả field có Default
-                // (muốn check thật sự thì phải lookup type info => phức tạp hơn)
+                // dont check type, assume all field has a Default
+                // (if check, then lookup type info => more complexity)
                 all_have_default &= true;
             }
             if all_have_default {
