@@ -1,3 +1,4 @@
+use advanced::with;
 #[allow(
     unused,
     unused_mut,
@@ -7,9 +8,10 @@
     unused_unsafe,
     dead_code
 )]
-use advanced::{sum, record};
-// use chrono::{Local};
+use advanced::{record, sum};
+use chrono::NaiveDate;
 use log::info;
+use utils::common_utils::type_of;
 use utils::log::configuration::init_logger;
 
 // record! {serde,
@@ -34,13 +36,26 @@ use utils::log::configuration::init_logger;
 //     username: String,
 //     dob: NaiveDate,
 // }
+fn log_before(fn_name: &str, fn_params: &[&dyn std::fmt::Debug]) {
+    info!("before fn: {}", fn_name);
+}
+fn log_after(fn_name: &str, fn_result: &dyn std::fmt::Debug, fn_params: &[&dyn std::fmt::Debug]) {
+    info!("after fn: {} result:{:?}", fn_name, fn_result);
+}
+// #[with(before(log_before), after(log_after))]
+#[with(before(log_before), after(log_after))]
+fn sum(a: i32, b: i32) -> i32 {
+    let __result = a + b;
+
+    __result
+}
 
 fn main() {
     init_logger();
+
     // let date_now = Local::now().date_naive();
     // let now = Local::now().naive_local();
-    let sum = sum!(200, 20);
-    info!("sum: {}", sum);
-
-
+    // let sum = sum!(200u64, 20, 10, 30);
+    // info!("sum: {} type {}", sum, type_of(&sum));
+    info!("sum {}", sum(1, 2));
 }

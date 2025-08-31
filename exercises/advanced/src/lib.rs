@@ -1,8 +1,7 @@
-use proc_macro::{TokenStream};
+use proc_macro::TokenStream;
 
-mod macros;
 mod adv_macros;
-
+mod macros;
 #[proc_macro_attribute]
 pub fn record(_attr: TokenStream, item: TokenStream) -> TokenStream {
     adv_macros::struct_data_adv::create_record(_attr, item)
@@ -10,5 +9,10 @@ pub fn record(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn sum(item: TokenStream) -> TokenStream {
-    adv_macros::util_func::sum(item)
+    adv_macros::util_func::calculate_sum(item)
+}
+
+#[proc_macro_attribute]
+pub fn with(attr: TokenStream, item: TokenStream) -> TokenStream {
+    adv_macros::util_func::create_with(attr, item)
 }

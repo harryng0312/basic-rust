@@ -1,12 +1,12 @@
 use proc_macro::TokenStream;
-use quote::{quote};
+use quote::quote;
 use syn::{parse_macro_input, AttributeArgs, Fields, ItemStruct, Lit, Meta, NestedMeta, Path};
 
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as AttributeArgs);
     let input = parse_macro_input!(item as ItemStruct);
 
-    let mut derives: Vec<Path> = Vec::new();
+    let mut derives: Vec<Path> = vec![];
     for arg in args {
         match arg {
             NestedMeta::Meta(Meta::Path(path)) => {
@@ -40,7 +40,7 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
                 for nested2 in list.nested {
                     match nested2 {
                         NestedMeta::Meta(Meta::Path(path)) => {
-                            // println!("  List item Path: {}", path.into_token_stream());
+                            // println!("  List item Path: {}", path.clone().into_token_stream());
                             derives.push(path);
                         }
                         _ => {}
@@ -76,7 +76,7 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
     let fields = &input.fields;
 
     // Generate getter & setter
-    let mut getters_setters = Vec::new();
+    let mut getters_setters: Vec<proc_macro2::TokenStream> = vec![];
     if let Fields::Named(named) = fields {
         for field in named.named.iter() {
             let fname = field.ident.as_ref().unwrap();
