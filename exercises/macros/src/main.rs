@@ -1,6 +1,3 @@
-use chrono::NaiveDate;
-use log::info;
-use macros::with;
 #[allow(
     unused,
     unused_mut,
@@ -10,8 +7,10 @@ use macros::with;
     unused_unsafe,
     dead_code
 )]
+use chrono::NaiveDate;
+use log::info;
+use macros::with;
 use macros::{record, sum};
-use utils::common_utils::type_of;
 use utils::log::configuration::init_logger;
 
 // record! {serde,

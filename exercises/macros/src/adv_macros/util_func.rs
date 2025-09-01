@@ -107,8 +107,6 @@ pub(crate) fn wrap_fn(
                 _ => None,
             },
             FnArg::Receiver(_) => None,
-            // FnArg::Typed(pat) => Some(pat.pat.clone()),
-            _ => None,
         })
         .collect::<Vec<_>>();
     // build &[&dyn Any]

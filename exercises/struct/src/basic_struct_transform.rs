@@ -1,11 +1,9 @@
-use crate::basic_struct_transform::date_format::deserialize;
-use std::cell::RefCell;
-use std::fmt::Debug;
 // use std::rc::{Rc, Weak};
 use chrono::NaiveDateTime;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::Debug;
 use std::sync::{Arc, RwLock, Weak};
 
 use utils::format::date_format;
@@ -60,17 +58,16 @@ mod tests {
     use chrono::Local;
     use rust_decimal::prelude::Zero;
     use rust_decimal::Decimal;
-    use std::cell::RefCell;
     use std::sync::{Arc, RwLock};
 
     #[test]
     fn test_json_struct() {
         let /*mut*/ order = Arc::new(Order {
-        order_date: Local::now().naive_local(),
-        total_amount: Decimal::zero(),
-        // order_details: RefCell::new(vec![]),
-        order_details: Arc::new(RwLock::new(vec![])),
-    });
+            order_date: Local::now().naive_local(),
+            total_amount: Decimal::zero(),
+            // order_details: RefCell::new(vec![]),
+            order_details: Arc::new(RwLock::new(vec![])),
+        });
         let order_detail = OrderDetail {
             product_id: "".to_string(),
             quantity: 2,

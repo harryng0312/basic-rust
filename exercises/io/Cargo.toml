@@ -14,5 +14,5 @@ overflow-checks = false # remove check overflow
 [dependencies]
 utils = { path = "../utils" }
 rayon = "^1"
-num_cpus="^1"
+num_cpus = "^1"
 log = "0.4.27"

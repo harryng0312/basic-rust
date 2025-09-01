@@ -1,19 +1,19 @@
+// use lazy_static::lazy_static;
+use crate::configuration::Configuration;
 use async_std::io::{ReadExt, Write, WriteExt};
 use async_std::net::{SocketAddr, TcpListener, TcpStream};
 use async_std::sync::RwLock;
 use async_std::task;
+use env_logger;
+use env_logger::Builder;
+use log::{error, info, LevelFilter};
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::env::join_paths;
 use std::error::Error;
 use std::net::{IpAddr, Shutdown};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
-// use lazy_static::lazy_static;
-use crate::configuration::Configuration;
-use env_logger;
-use env_logger::Builder;
-use log::{error, info, LevelFilter};
-use once_cell::sync::Lazy;
 use toml;
 use utils::log::configuration::{init_logger, load_config_file};
 

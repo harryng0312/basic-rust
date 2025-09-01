@@ -1,5 +1,5 @@
 use std::sync::mpsc::{Receiver, SyncSender};
-use std::sync::{mpsc, Arc};
+use std::sync::Arc;
 use std::time::Duration;
 
 use chrono::Local;

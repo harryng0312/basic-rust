@@ -10,9 +10,9 @@ edition = "2021"
 log = "^0"
 env_logger = "^0"
 chrono = "^0"
-serde = {version = "^1", features = ["derive"]}
+serde = { version = "^1", features = ["derive"] }
 bigdecimal = "^0"
-anyhow="^1"
-syn= {version="^1" , features = ["full"]}
-quote="^1"
-proc-macro2="^1"
+anyhow = "^1"
+syn = { version = "^1", features = ["full"] }
+quote = "^1"
+proc-macro2 = "^1"

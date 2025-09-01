@@ -20,7 +20,6 @@ diesel = { version = "2.1", features = ["sqlite", "r2d2"] }
 r2d2 = "0.8"
 dotenvy = "0.15"
 
-
 ⸻
 
 📂 src/schema.rs
@@ -33,7 +32,6 @@ id -> Integer,
 name -> Text,
 }
 }
-
 
 ⸻
 
@@ -53,7 +51,6 @@ pub name: String,
 pub struct NewUser {
 pub name: String,
 }
-
 
 ⸻
 
@@ -95,6 +92,7 @@ let pool = r2d2::Pool::builder()
         .serve(app.into_make_service())
         .await
         .unwrap();
+
 }
 
 // GET /users -> trả về toàn bộ user
@@ -121,15 +119,15 @@ let conn = pool.get().expect("Lấy connection thất bại");
         .expect("Không insert được");
 
     "✅ user đã được thêm"
-}
 
+}
 
 ⸻
 
 🔹 Cách hoạt động
-•	pool.get() lấy connection từ pool.
-•	Khi conn ra khỏi scope (kết thúc hàm), nó release về pool → tái sử dụng cho request khác.
-•	Nếu pool bị drop (ví dụ khi server shutdown), toàn bộ connection sẽ bị đóng.
+• pool.get() lấy connection từ pool.
+• Khi conn ra khỏi scope (kết thúc hàm), nó release về pool → tái sử dụng cho request khác.
+• Nếu pool bị drop (ví dụ khi server shutdown), toàn bộ connection sẽ bị đóng.
 
 ⸻
 
@@ -148,7 +146,6 @@ http://127.0.0.1:3000/users
 Đọc danh sách:
 
 curl http://127.0.0.1:3000/users
-
 
 ⸻
 Ok 👍 mình sẽ mở rộng ví dụ trên sang PostgreSQL để giống môi trường production hơn.
@@ -171,7 +168,6 @@ diesel = { version = "2.1", features = ["postgres", "r2d2"] }
 r2d2 = "0.8"
 dotenvy = "0.15"
 
-
 ⸻
 
 🔹 Chuẩn bị database
@@ -183,7 +179,6 @@ createdb axum_demo
 Tạo file .env:
 
 DATABASE_URL=postgres://postgres:password@localhost/axum_demo
-
 
 ⸻
 
@@ -197,7 +192,6 @@ id -> Int4,
 name -> Varchar,
 }
 }
-
 
 ⸻
 
@@ -217,7 +211,6 @@ pub name: String,
 pub struct NewUser {
 pub name: String,
 }
-
 
 ⸻
 
@@ -261,6 +254,7 @@ let manager = ConnectionManager::<PgConnection>::new(database_url);
         .serve(app.into_make_service())
         .await
         .unwrap();
+
 }
 
 // GET /users
@@ -287,8 +281,8 @@ let conn = pool.get().expect("Lấy connection thất bại");
         .expect("Không insert được");
 
     "✅ user đã được thêm"
-}
 
+}
 
 ⸻
 
@@ -314,7 +308,6 @@ Rồi chạy:
 
 diesel migration run
 
-
 ⸻
 
 🔹 Test API
@@ -333,13 +326,12 @@ http://127.0.0.1:3000/users
 
 curl http://127.0.0.1:3000/users
 
-
 ⸻
 
 📌 Ở đây Diesel + r2d2 sẽ lo đóng/mở connection tự động:
-•	pool.get() → lấy connection từ pool.
-•	Khi conn ra khỏi scope → nó được release về pool, tái sử dụng cho request khác.
-•	Nếu toàn bộ pool bị drop (khi server shutdown) → tất cả connection tới Postgres sẽ đóng thật sự.
+• pool.get() → lấy connection từ pool.
+• Khi conn ra khỏi scope → nó được release về pool, tái sử dụng cho request khác.
+• Nếu toàn bộ pool bị drop (khi server shutdown) → tất cả connection tới Postgres sẽ đóng thật sự.
 
 ⸻
 

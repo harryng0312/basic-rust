@@ -1,4 +1,5 @@
-Dưới đây là ví dụ Rust + Diesel minh họa cách xây dựng trait repository chung, implement cho UserRepo và PostRepo, có hỗ trợ transaction và batch insert, dùng một template implement chung.
+Dưới đây là ví dụ Rust + Diesel minh họa cách xây dựng trait repository chung, implement cho UserRepo và PostRepo, có hỗ
+trợ transaction và batch insert, dùng một template implement chung.
 
 ⸻
 
@@ -21,7 +22,6 @@ body -> Text,
 created_at -> Timestamp,
 }
 }
-
 
 ⸻
 
@@ -63,7 +63,6 @@ pub title: &'a str,
 pub body: &'a str,
 pub created_at: NaiveDateTime,
 }
-
 
 ⸻
 
@@ -115,6 +114,7 @@ pub struct $repo;
             }
         }
     };
+
 }
 
 	•	Macro giúp reuse cho nhiều bảng
@@ -167,19 +167,21 @@ let conn = &mut pool.get()?;
     println!("Post 1: {:?}", post);
 
     Ok(())
-}
 
+}
 
 ⸻
 
 ✅ Tóm tắt
-1.	Trait Repository định nghĩa CRUD chung
-2.	Macro impl_repository! giúp reuse code cho nhiều bảng
-3.	Transaction được áp dụng cho batch insert, tự rollback nếu có lỗi
-4.	Sử dụng chung cho UserRepo và PostRepo mà không cần viết lại logic
+
+1. Trait Repository định nghĩa CRUD chung
+2. Macro impl_repository! giúp reuse code cho nhiều bảng
+3. Transaction được áp dụng cho batch insert, tự rollback nếu có lỗi
+4. Sử dụng chung cho UserRepo và PostRepo mà không cần viết lại logic
 
 ⸻
 
-Mình có thể viết thêm phiên bản hỗ trợ NewUser / NewPost để insert mà không cần id, đúng chuẩn insert vào auto-increment primary key của PostgreSQL, nếu bạn muốn.
+Mình có thể viết thêm phiên bản hỗ trợ NewUser / NewPost để insert mà không cần id, đúng chuẩn insert vào auto-increment
+primary key của PostgreSQL, nếu bạn muốn.
 
 Bạn có muốn mình làm không?

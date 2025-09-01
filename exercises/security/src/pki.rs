@@ -24,7 +24,7 @@ fn gen_keypair(
                     .unwrap()
                     .as_slice(),
             )
-            .to_string();
+                .to_string();
         } else {
             priv_key_b64 = String::from_utf8_lossy(ec_key.private_key_to_pem().unwrap().as_slice())
                 .to_string();

@@ -1,6 +1,7 @@
 use core::arch::aarch64::*;
 use rayon::prelude::*;
-use std::time::Instant; // SIMD NEON cho Apple Silicon
+use std::time::Instant;
+// SIMD NEON cho Apple Silicon
 
 const N: usize = 1 << 20; // Kích thước mảng (nằm vừa L2 cache)
 const REPEATS: usize = 1_000; // Số vòng lặp để tăng thời gian chạy
