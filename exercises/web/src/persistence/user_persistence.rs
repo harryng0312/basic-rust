@@ -11,11 +11,11 @@ pub fn find_by_id(id: u64) -> AppResult<User> {
 }
 
 pub fn inssert(user: &User) -> AppResult<bool> {
-    Err(anyhow!("User {} not found", user.id))
+    Err(anyhow!("User {} not found", user.id()))
 }
 
 pub fn update(user: &User) -> AppResult<bool> {
-    Err(anyhow!("User {} not found", user.id))
+    Err(anyhow!("User {} not found", user.id()))
 }
 pub fn delete(id: u64) -> AppResult<bool> {
     Err(anyhow!("User {} not found", id))

@@ -41,7 +41,7 @@ fn insert_batch(vals: &Vec<TestRecord>) -> AppResult<()> {
 
 fn update(val: &TestRecord) -> AppResult<()> {
     let mut conn = get_connection()?;
-    let upd = diesel::update(test_recs.filter(id.eq(val.id)))
+    let upd = diesel::update(test_recs.filter(id.eq(val.id())))
         .set(val)
         .execute(&mut conn)?;
     info!("Updated {} records", upd);
@@ -53,9 +53,10 @@ fn delete(_id: u64) -> AppResult<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::dto::test_dto::DtoTest;
     use crate::models::test_rec::TestRecord;
     use crate::persistence::test_rec_persistence::{find, insert, insert_batch};
-    use chrono::{Local, NaiveDateTime, Utc};
+    use chrono::{Local, NaiveDate, NaiveDateTime, Utc};
     use log::info;
     use utils::log::configuration::init_logger;
 
@@ -83,12 +84,12 @@ mod tests {
             //     created_at: Local::now().naive_local(),
             // })
             // .expect(format!("insert failed at {} step", i).as_str());
-            let test_rec = TestRecord {
-                id: i,
-                name: format!("name of {}", i),
-                available: false,
-                created_at: Local::now().naive_local(),
-            };
+            let test_rec = TestRecord::new(
+                i,
+                format!("name of {}", i),
+                false,
+                Local::now().naive_local(),
+            );
             ls_test_recs.push(test_rec);
         }
         insert_batch(&ls_test_recs).unwrap();

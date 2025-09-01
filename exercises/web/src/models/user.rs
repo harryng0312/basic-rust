@@ -1,5 +1,6 @@
 use chrono::{NaiveDate, NaiveDateTime};
 use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
+use macros::record;
 
 table! {
     #[sql_name="user_"]
@@ -24,23 +25,24 @@ table! {
     }
 }
 // #[derive(Queryable, Serialize, Identifiable, Insertable, AsChangeset, Debug)]
-#[derive(Debug, Queryable, Identifiable, Insertable)]
+#[derive(Queryable, Identifiable, Insertable)]
+#[record]
 // #[table_name = "user_"]
 #[diesel(table_name=users)]
 // #[primary_key(id_)]
 #[diesel(primary_key(id))]
 pub struct User {
     // #[column_name = "id_"]
-    pub id: i64,
-    pub created_date: NaiveDateTime,
-    pub modified_date: NaiveDateTime,
-    pub dob: NaiveDate,
-    pub passwd: String,
-    pub passwd_enc_method: String,
-    pub screenname: String,
+    id: i64,
+    created_date: NaiveDateTime,
+    modified_date: NaiveDateTime,
+    dob: NaiveDate,
+    passwd: String,
+    passwd_enc_method: String,
+    screenname: String,
     // #[column_name = "status_"]
-    pub status: i16,
-    pub username: String,
-    pub org_id: i64,
-    pub org_treepath: String,
+    status: i16,
+    username: String,
+    org_id: i64,
+    org_treepath: String,
 }

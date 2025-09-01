@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
 use macros::record;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 table! {
     #[sql_name="test_rec"]
@@ -15,18 +15,17 @@ table! {
     }
 }
 
-// #[record]
 #[derive(Queryable, Identifiable, Insertable, AsChangeset)]
 // #[derive(Debug, Serialize, Queryable, Identifiable, Insertable, AsChangeset)]
-// #[table_name = "user_"]
+#[record(derive(Debug, Serialize, Deserialize))]
+// #[table_name = "test_recs"]
 #[diesel(table_name=test_recs)]
 // #[primary_key(id_)]
 #[diesel(primary_key(id))]
-#[record]
 pub struct TestRecord {
     // #[column_name = "id_"]
-    pub id: i64,
-    pub name: String,
-    pub available: bool,
-    pub created_at: NaiveDateTime,
+    id: i64,
+    name: String,
+    available: bool,
+    created_at: NaiveDateTime,
 }

@@ -1,10 +1,9 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::punctuated::Punctuated;
-use syn::token::Comma;
-use syn::{parse_macro_input, Expr, Fields, ItemStruct, Lit, Path};
+use syn::{parse_macro_input, Expr, Fields, ItemStruct, Lit, Path, Token};
 
-type AttributeArgs = Punctuated<Expr, Comma>;
+type AttributeArgs = Punctuated<Expr, Token![,]>;
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr with AttributeArgs::parse_terminated);
     let input = parse_macro_input!(item as ItemStruct);
@@ -83,12 +82,18 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
     let name = &input.ident;
     let fields = &input.fields;
 
-    // Generate getter & setter
+    // Generate associated func getter & setter
     let mut getters_setters: Vec<proc_macro2::TokenStream> = vec![];
+    let mut assoc_fn = quote! {};
     if let Fields::Named(named) = fields {
+        let mut assoc_fn_args: Vec<proc_macro2::TokenStream> = vec![];
+        let mut assoc_fn_params: Vec<proc_macro2::TokenStream> = vec![];
         for field in named.named.iter() {
             let fname = field.ident.as_ref().unwrap();
             let ftype = &field.ty;
+
+            assoc_fn_args.push(quote! { #fname: #ftype });
+            assoc_fn_params.push(quote! { #fname });
 
             let getter_name = syn::Ident::new(&format!("{}", fname), fname.span());
             let setter_name = syn::Ident::new(&format!("set_{}", fname), fname.span());
@@ -102,6 +107,14 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
                 }
             });
         }
+        // check impl
+        assoc_fn = quote! {
+            pub fn new( #(#assoc_fn_args),* ) -> Self {
+                Self {
+                    #(#assoc_fn_params),*
+                }
+            }
+        }
     }
 
     let expanded = quote! {
@@ -109,6 +122,7 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
         pub struct #name #fields
 
         impl #name {
+            #assoc_fn
             #(#getters_setters)*
         }
     };

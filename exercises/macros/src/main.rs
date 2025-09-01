@@ -44,9 +44,7 @@ fn log_after(fn_name: &str, fn_result: &dyn std::fmt::Debug, fn_params: &[&dyn s
 // #[with(before(log_before), after(log_after))]
 #[with(before(log_before), after(log_after))]
 fn sum(a: i32, b: i32) -> i32 {
-    let __result = a + b;
-
-    __result
+    a + b
 }
 
 fn main() {

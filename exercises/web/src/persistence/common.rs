@@ -8,11 +8,11 @@ use utils::error::app_error::AppResult;
 type RawDbConnection = diesel::PgConnection;
 type DbConnectionPool = diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<RawDbConnection>>;
 pub type DbConnection =
-diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<RawDbConnection>>;
+    diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<RawDbConnection>>;
 
 type AsyncDbConnectionPool = bb8::Pool<bb8_postgres::PostgresConnectionManager<NoTls>>;
 pub type AsyncDbConnection =
-bb8::PooledConnection<'static, bb8_postgres::PostgresConnectionManager<NoTls>>;
+    bb8::PooledConnection<'static, bb8_postgres::PostgresConnectionManager<NoTls>>;
 static DB_CONNECTION_POOL: Lazy<DbConnectionPool> =
     Lazy::new(|| create_conn_pool().expect("Could not create DB connection pool"));
 
@@ -23,7 +23,7 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
     // dotenv().ok();
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
     let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
     let db_name = env::var("DB_NAME").map_err(|e| e)?;
     let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
@@ -42,7 +42,7 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
 pub async fn create_async_conn_pool() -> AppResult<AsyncDbConnectionPool> {
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
     let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
     let db_name = env::var("DB_NAME").map_err(|e| e)?;
     let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
@@ -127,12 +127,12 @@ mod tests {
         pin!(rows);
         while let Some(row) = rows.next().await {
             if let Ok(row) = row {
-                let test_rec = TestRecord {
-                    id: row.get("id_"),
-                    name: row.get("name_"),
-                    available: row.get("available"),
-                    created_at: row.get::<_, NaiveDateTime>("created_at"),
-                };
+                let test_rec = TestRecord::new(
+                    row.get("id_"),
+                    row.get("name_"),
+                    row.get("available"),
+                    row.get::<_, NaiveDateTime>("created_at"),
+                );
                 info!("{:#?}", test_rec);
             }
         }
