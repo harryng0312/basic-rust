@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
+#proc-macro = true
 
 [dependencies]
 log = "^0"
@@ -12,3 +13,6 @@ chrono = "^0"
 serde = {version = "^1", features = ["derive"]}
 bigdecimal = "^0"
 anyhow="^1"
+syn= {version="^1" , features = ["full"]}
+quote="^1"
+proc-macro2="^1"

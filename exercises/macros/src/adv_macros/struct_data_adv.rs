@@ -34,9 +34,6 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
             }
             NestedMeta::Meta(Meta::List(list)) => {
                 // ex: #[record(derive(Debug, Clone))]
-                // let ident = list.path.into_token_stream().to_string();
-                // println!("Found List: {}", ident);
-
                 for nested2 in list.nested {
                     match nested2 {
                         NestedMeta::Meta(Meta::Path(path)) => {
@@ -105,5 +102,5 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
         }
     };
 
-    expanded.into()
+    TokenStream::from(expanded)
 }

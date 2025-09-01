@@ -15,7 +15,7 @@ use log::{error, info, LevelFilter};
 use once_cell::sync::Lazy;
 use toml;
 use utils::log::configuration::{init_logger, load_config_file};
-// use crate::advanced::configuration::{Configuration, init_logger, load_config_file};
+// use crate::macros::configuration::{Configuration, init_logger, load_config_file};
 
 // lazy_static! {
 //     static ref CONFIG :Configuration = toml::from_str(load_config_file().as_str()).unwrap();
@@ -82,7 +82,7 @@ async fn handle_serv_connection(
 /// # Examples
 ///
 /// ```shell
-/// $ cargo test --color=always --package basic-rust --bin basic-rust advanced::tcp_client_async::start_client
+/// $ cargo test --color=always --package basic-rust --bin basic-rust macros::tcp_client_async::start_client
 /// ```
 fn start_client() {
     init_logger();

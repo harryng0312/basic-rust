@@ -1,5 +1,6 @@
-use chrono::{NaiveDateTime};
+use chrono::NaiveDateTime;
 use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
+use macros::record;
 use serde::Serialize;
 
 table! {
@@ -13,12 +14,15 @@ table! {
         created_at -> Timestamp,
     }
 }
-// #[derive(Queryable, Serialize, Identifiable, Insertable, AsChangeset, Debug)]
-#[derive(Debug, Serialize, Queryable, Identifiable, Insertable, AsChangeset)]
+
+// #[record]
+#[derive(Queryable, Identifiable, Insertable, AsChangeset)]
+// #[derive(Debug, Serialize, Queryable, Identifiable, Insertable, AsChangeset)]
 // #[table_name = "user_"]
 #[diesel(table_name=test_recs)]
 // #[primary_key(id_)]
 #[diesel(primary_key(id))]
+#[record]
 pub struct TestRecord {
     // #[column_name = "id_"]
     pub id: i64,

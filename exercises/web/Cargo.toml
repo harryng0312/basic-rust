@@ -3,8 +3,13 @@ name = "web"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+ name = "web"
+ path = "src/lib.rs"
+
 [dependencies]
 utils = { path = "../utils" }
+macros = { path = "../macros" }
 tokio = { version = "^1", features = ["time", "rt-multi-thread", "sync", "rt", "macros"]}
 tokio-postgres = { version = "^0", features = ["with-uuid-0_8","with-chrono-0_4"] }
 tokio-stream = "^0"
