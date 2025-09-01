@@ -3,9 +3,9 @@ use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, Expr, Fields, ItemStruct, Lit, Path, Token};
 
-type AttributeArgs = Punctuated<Expr, Token![,]>;
+// type AttributeArgs = Punctuated<Expr, Token![,]>;
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr with AttributeArgs::parse_terminated);
+    let args = parse_macro_input!(attr with Punctuated::<Expr, Token![,]>::parse_terminated);
     let input = parse_macro_input!(item as ItemStruct);
 
     let mut derives: Vec<Path> = vec![];

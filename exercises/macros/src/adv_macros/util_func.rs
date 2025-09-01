@@ -5,7 +5,7 @@ use syn::{
     parse_macro_input, Expr, FnArg, ImplItem, Item, ItemFn, ItemImpl, ItemMod, Pat, Path, Token,
 };
 
-type AttributeArgs = Punctuated<Expr, Token![,]>;
+// type AttributeArgs = Punctuated<Expr, Token![,]>;
 pub(crate) fn calculate_sum(input: TokenStream) -> TokenStream {
     // for multi params, separated by commas
     let args = parse_macro_input!(input with Punctuated::<Expr, Token![,]>::parse_terminated);
@@ -16,7 +16,7 @@ pub(crate) fn calculate_sum(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-fn get_before_after_paths(args: AttributeArgs) -> (Vec<Path>, Vec<Path>) {
+fn get_before_after_paths(args: Punctuated<Expr, Token![,]>) -> (Vec<Path>, Vec<Path>) {
     let mut befores: Vec<Path> = vec![];
     let mut afters: Vec<Path> = vec![];
     for (idx, arg) in args.iter().enumerate() {
@@ -45,28 +45,7 @@ fn get_before_after_paths(args: AttributeArgs) -> (Vec<Path>, Vec<Path>) {
                         if ident == "before" {}
                     }
                 }
-                // let ident = call.func.segments.last().unwrap().ident;
-                // if list.nested.len() >= 1 {
-                //     if ident == "before" {
-                //         list.nested.iter().for_each(|m| match m {
-                //             NestedMeta::Meta(Meta::Path(path)) => {
-                //                 befores.push(path.clone());
-                //             }
-                //             _ => (),
-                //         });
-                //     } else if ident == "after" {
-                //         list.nested.iter().for_each(|m| match m {
-                //             NestedMeta::Meta(Meta::Path(path)) => {
-                //                 afters.push(path.clone());
-                //             }
-                //             _ => (),
-                //         });
-                //     }
-                // }
             }
-            // NestedMeta::Meta(Meta::NameValue(nv)) => {
-            //     eprintln!("Can not parse argument: {}", nv.path.get_ident().unwrap());
-            // }
             Expr::MethodCall(call) => {
                 let ident = &call.method;
                 println!("Can not parse argument: MethodCall to {}", ident);
@@ -193,7 +172,7 @@ pub(crate) fn wrap_struct_impl(
 }
 
 pub(crate) fn create_with(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr with AttributeArgs::parse_terminated);
+    let args = parse_macro_input!(attr with Punctuated::<Expr, Token![,]>::parse_terminated);
     // extract before and after interceptor
     let (before, after) = get_before_after_paths(args);
     let input = parse_macro_input!(item as Item);
