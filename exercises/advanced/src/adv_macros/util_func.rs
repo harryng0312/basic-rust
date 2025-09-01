@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::{
-    parse_macro_input, AttributeArgs, Expr, FnArg, ItemFn, Meta, NestedMeta, Pat,
-    Path, Token,
+    parse_macro_input, AttributeArgs, Expr, FnArg, ImplItem, ImplItemMethod, Item, ItemFn,
+    ItemImpl, ItemMod, ItemStruct, Meta, NestedMeta, Pat, Path, Token,
 };
 
 pub(crate) fn calculate_sum(input: TokenStream) -> TokenStream {
@@ -51,20 +51,17 @@ fn get_before_after_paths(args: AttributeArgs) -> (Vec<Path>, Vec<Path>) {
     }
     (befores, afters)
 }
-pub(crate) fn create_with(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr as AttributeArgs);
-    let input_fn = parse_macro_input!(item as ItemFn);
-
-    // extract before and after interceptor
-    let (before, after) = get_before_after_paths(args);
-
+pub(crate) fn wrap_fn(
+    item_fn: ItemFn,
+    before: Vec<Path>,
+    after: Vec<Path>,
+) -> proc_macro2::TokenStream {
     // get original fn
-    let fn_sig = &input_fn.sig;
+    let fn_sig = &item_fn.sig;
     let fn_name = &fn_sig.ident;
-    let fn_vis = &input_fn.vis;
-    let fn_attrs = &input_fn.attrs;
-    let fn_block = &input_fn.block;
-
+    let fn_vis = &item_fn.vis;
+    let fn_attrs = &item_fn.attrs;
+    let fn_block = &item_fn.block;
     // extract params
     let fn_params = fn_sig
         .inputs
@@ -82,25 +79,88 @@ pub(crate) fn create_with(attr: TokenStream, item: TokenStream) -> TokenStream {
     // build &[&dyn Any]
     let param_refs = fn_params
         .iter()
-        // .map(|param| parse_quote! { &#param })
         // .collect::<Vec<Expr>>();
         // .map(|param| quote! { &#param as &dyn std::any:Any })
         .map(|param| quote! { &#param })
         .collect::<Vec<proc_macro2::TokenStream>>();
 
     let param_refs = quote! { #(#param_refs),* };
-
-    let expanded = quote! {
-        #fn_vis #(#fn_attrs)* #fn_sig {
-            // #( #befores(stringify!(#fn_name), &[ #(&#params_refs as &dyn std::any::Any ),* ] ); )*
-            // #( #befores(stringify!(#fn_name), &[#(#params_refs),*] )*; )*
-            #(#before(stringify!(#fn_name), &[ #param_refs ]); )*
-            let __result = (|| #fn_block )();
-            // #( #after(stringify!(#fn_name), &__result as &dyn std::any::Any,
-            //     &[ #( & #params_refs as &dyn std::any::Any ),* ] ); )*
-            #(#after(stringify!(#fn_name), &__result, &[ #param_refs ]); )*
-            __result
-        }
+    let output = match fn_sig.asyncness {
+        Some(_) => quote! {
+            #fn_vis #(#fn_attrs)* #fn_sig {
+                #(#before(stringify!(#fn_name), &[ #param_refs ]); )*
+                let __result = (async || #fn_block )().await;
+                #(#after(stringify!(#fn_name), &__result, &[ #param_refs ]); )*
+                __result
+            }
+        },
+        None => quote! {
+            #fn_vis #(#fn_attrs)* #fn_sig {
+                #(#before(stringify!(#fn_name), &[ #param_refs ]); )*
+                let __result = (|| #fn_block )();
+                #(#after(stringify!(#fn_name), &__result, &[ #param_refs ]); )*
+                __result
+            }
+        },
     };
-    TokenStream::from(expanded)
+
+    output
+}
+
+pub(crate) fn wrap_mod(
+    mut item_mod: ItemMod,
+    before: Vec<Path>,
+    after: Vec<Path>,
+) -> proc_macro2::TokenStream {
+    if let Some((_, ref mut items)) = &mut item_mod.content {
+        for item in items.iter_mut() {
+            match item {
+                Item::Fn(item_fn) => {
+                    let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
+                    *item_fn = syn::parse2(wrapped_fn).unwrap();
+                }
+                _ => {}
+            }
+        }
+    }
+    quote! { #item_mod }
+}
+
+pub(crate) fn wrap_struct_impl(
+    mut item_impl: ItemImpl,
+    before: Vec<Path>,
+    after: Vec<Path>,
+) -> proc_macro2::TokenStream {
+    for item in item_impl.items.iter_mut() {
+        match item {
+            ImplItem::Method(item_method) => {
+                let item_fn = ItemFn {
+                    attrs: item_method.attrs.clone(),
+                    vis: item_method.vis.clone(),
+                    sig: item_method.sig.clone(),
+                    block: Box::new(item_method.block.clone()),
+                };
+                let wrap_method = wrap_fn(item_fn, before.clone(), after.clone());
+                *item_method = syn::parse2(wrap_method).unwrap();
+            }
+            _ => {}
+        }
+    }
+    quote! { #item_impl }
+}
+
+pub(crate) fn create_with(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(attr as AttributeArgs);
+    // extract before and after interceptor
+    let (before, after) = get_before_after_paths(args);
+    let input = parse_macro_input!(item as Item);
+
+    let output = match input {
+        Item::Fn(item_fn) => wrap_fn(item_fn, before.clone(), after.clone()),
+        Item::Mod(item_mod) => wrap_mod(item_mod, before.clone(), after.clone()),
+        Item::Impl(item_impl) => wrap_struct_impl(item_impl, before.clone(), after.clone()),
+        _ => panic!("with attribute supports fn, mod or struct only"),
+    };
+
+    TokenStream::from(output)
 }
