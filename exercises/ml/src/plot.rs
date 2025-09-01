@@ -4,8 +4,7 @@ use std::f64::consts::PI;
 use rand;
 use rand::Rng;
 
-
-fn create_scratter()-> Result<(), Box<dyn std::error::Error>> {
+fn create_scratter() -> Result<(), Box<dyn std::error::Error>> {
     // create backend
     let root = BitMapBackend::new("sin_with_noise.png", (640, 480)).into_drawing_area();
     root.fill(&WHITE)?;

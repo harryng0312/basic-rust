@@ -1,46 +1,57 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, AttributeArgs, Fields, ItemStruct, Lit, Meta, NestedMeta, Path};
+use syn::punctuated::Punctuated;
+use syn::token::Comma;
+use syn::{parse_macro_input, Expr, Fields, ItemStruct, Lit, Path};
 
+type AttributeArgs = Punctuated<Expr, Comma>;
 pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr as AttributeArgs);
+    let args = parse_macro_input!(attr with AttributeArgs::parse_terminated);
     let input = parse_macro_input!(item as ItemStruct);
 
     let mut derives: Vec<Path> = vec![];
     for arg in args {
         match arg {
-            NestedMeta::Meta(Meta::Path(path)) => {
+            Expr::Path(expr_path) => {
                 // ex: #[record(SomeAttr)]
                 // println!("Found Path: {}", path.into_token_stream());
-                derives.push(path);
+                derives.push(expr_path.path);
             }
-            NestedMeta::Meta(Meta::NameValue(nv)) => {
+            Expr::Assign(assign) => {
                 // ex: #[record(extra = "yes")]
                 // let ident = nv.path.into_token_stream().to_string();
                 // let lit = nv.lit.into_token_stream().to_string();
                 // println!("Found NameValue: {} = {}", ident, lit);
-                if nv.path.is_ident("derive") {
-                    if let Lit::Str(litstr) = &nv.lit {
-                        let tokens_str = litstr.value();
-                        for d in tokens_str.split(',') {
-                            let d = d.trim();
-                            if !d.is_empty() {
-                                let path: Path = syn::parse_str(d).unwrap();
-                                derives.push(path);
+                if let Expr::Path(left) = *assign.left {
+                    if left.path.is_ident("derive") {
+                        if let Expr::Lit(right) = *assign.right {
+                            if let Lit::Str(litstr) = right.lit {
+                                let tokens_str = litstr.value();
+                                for d in tokens_str.split(',') {
+                                    let d = d.trim();
+                                    if !d.is_empty() {
+                                        let path: Path = syn::parse_str(d).unwrap();
+                                        derives.push(path);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            NestedMeta::Meta(Meta::List(list)) => {
+            Expr::Call(call) => {
                 // ex: #[record(derive(Debug, Clone))]
-                for nested2 in list.nested {
-                    match nested2 {
-                        NestedMeta::Meta(Meta::Path(path)) => {
-                            // println!("  List item Path: {}", path.clone().into_token_stream());
-                            derives.push(path);
+                if let Expr::Path(expr_path) = *call.func {
+                    if expr_path.path.is_ident("derive") {
+                        for arg in call.args {
+                            match arg {
+                                Expr::Path(path) => {
+                                    // println!("  List item Path: {}", path.clone().into_token_stream());
+                                    derives.push(path.path);
+                                }
+                                _ => {}
+                            }
                         }
-                        _ => {}
                     }
                 }
             }

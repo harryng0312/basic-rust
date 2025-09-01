@@ -110,7 +110,7 @@ fn calculate_entropy(labels: &Vec<u32>) -> f64 {
     if len_n == 0 {
         return 0.0;
     }
-    let unq_labels= labels.iter().map(|&x| x).collect::<HashSet<u32>>();
+    let unq_labels = labels.iter().map(|&x| x).collect::<HashSet<u32>>();
     let mut entropy = 0.0;
     for label in unq_labels {
         let label_count = labels.iter().filter(|&&x| x == label).count() as f64;
@@ -389,7 +389,10 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     let tree = build_tree(&m_x_train, &y_train, 0, MAX_DEPTH);
     let end = Instant::now();
     let tree_some = Some(Box::new(tree.clone()));
-    info!("Build tree cost time: {:.3} sec", (end - start).as_secs_f64());
+    info!(
+        "Build tree cost time: {:.3} sec",
+        (end - start).as_secs_f64()
+    );
     print_tree(&keywords, &tree_some, "");
     // test
     // let opt_tree = Some(Box::new(tree));
@@ -408,7 +411,11 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     let new_msg = "Free tickets to win a prize! Call now!";
     let new_sample = extract_features(&new_msg.to_string(), &keywords)?;
     let prediction = predict(&tree_some, &new_sample);
-    info!("Prediction: {}: {}", new_msg, if prediction == 1 { "spam" } else { "ham" });
+    info!(
+        "Prediction: {}: {}",
+        new_msg,
+        if prediction == 1 { "spam" } else { "ham" }
+    );
 
     Ok(())
 }

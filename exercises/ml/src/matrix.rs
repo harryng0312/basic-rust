@@ -1,9 +1,9 @@
+use log::info;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use rayon::prelude::*;
 use std::env;
 use std::time::{Duration, Instant};
-use log::info;
 
 /// Create random matrix (row-major) flattened as Vec<f64>
 /// shape: rows x cols
@@ -140,8 +140,8 @@ fn parse_arg(args: &[String], key: &str, default: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use utils::log::configuration::init_logger;
     use super::*;
+    use utils::log::configuration::init_logger;
 
     #[test]
     fn test_perf() {

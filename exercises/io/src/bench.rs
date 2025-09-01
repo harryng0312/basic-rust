@@ -1,6 +1,6 @@
+use core::arch::aarch64::*;
 use rayon::prelude::*;
-use std::time::Instant;
-use core::arch::aarch64::*; // SIMD NEON cho Apple Silicon
+use std::time::Instant; // SIMD NEON cho Apple Silicon
 
 const N: usize = 1 << 20; // Kích thước mảng (nằm vừa L2 cache)
 const REPEATS: usize = 1_000; // Số vòng lặp để tăng thời gian chạy
@@ -28,9 +28,9 @@ fn flops_neon_fma(a: &[f32], b: &[f32]) -> f32 {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use log::info;
     use utils::log::configuration::init_logger;
-    use super::*;
     #[test]
     fn bench_perf() {
         init_logger();
@@ -59,4 +59,3 @@ mod tests {
         info!("GFLOPS: {:.2}", gflops);
     }
 }
-

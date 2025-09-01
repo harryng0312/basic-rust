@@ -2,10 +2,10 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::{
-    parse_macro_input, AttributeArgs, Expr, FnArg, ImplItem, ImplItemMethod, Item, ItemFn,
-    ItemImpl, ItemMod, ItemStruct, Meta, NestedMeta, Pat, Path, Token,
+    parse_macro_input, Expr, FnArg, ImplItem, Item, ItemFn, ItemImpl, ItemMod, Pat, Path, Token,
 };
 
+type AttributeArgs = Punctuated<Expr, Token![,]>;
 pub(crate) fn calculate_sum(input: TokenStream) -> TokenStream {
     // for multi params, separated by commas
     let args = parse_macro_input!(input with Punctuated::<Expr, Token![,]>::parse_terminated);
@@ -21,28 +21,63 @@ fn get_before_after_paths(args: AttributeArgs) -> (Vec<Path>, Vec<Path>) {
     let mut afters: Vec<Path> = vec![];
     for (idx, arg) in args.iter().enumerate() {
         match arg {
-            NestedMeta::Meta(Meta::List(list)) => {
-                let ident = &list.path.segments.last().unwrap().ident;
-                if list.nested.len() >= 1 {
-                    if ident == "before" {
-                        list.nested.iter().for_each(|m| match m {
-                            NestedMeta::Meta(Meta::Path(path)) => {
-                                befores.push(path.clone());
+            // NestedMeta::Meta(Meta::List(list)) => {
+            Expr::Call(call) => {
+                if let Expr::Path(ref fn_call) = *call.func {
+                    let fn_args = &call.args;
+                    if !fn_args.is_empty() {
+                        let ident = &fn_call.path.segments.last().unwrap().ident;
+                        match ident.to_string().as_str() {
+                            "before" => {
+                                fn_args.iter().for_each(|itm| match itm {
+                                    Expr::Path(path) => befores.push(path.path.clone()),
+                                    _ => {}
+                                });
                             }
-                            _ => (),
-                        });
-                    } else if ident == "after" {
-                        list.nested.iter().for_each(|m| match m {
-                            NestedMeta::Meta(Meta::Path(path)) => {
-                                afters.push(path.clone());
+                            "after" => {
+                                fn_args.iter().for_each(|itm| match itm {
+                                    Expr::Path(path) => afters.push(path.path.clone()),
+                                    _ => {}
+                                });
                             }
-                            _ => (),
-                        });
+                            _ => {}
+                        }
+                        if ident == "before" {}
                     }
                 }
+                // let ident = call.func.segments.last().unwrap().ident;
+                // if list.nested.len() >= 1 {
+                //     if ident == "before" {
+                //         list.nested.iter().for_each(|m| match m {
+                //             NestedMeta::Meta(Meta::Path(path)) => {
+                //                 befores.push(path.clone());
+                //             }
+                //             _ => (),
+                //         });
+                //     } else if ident == "after" {
+                //         list.nested.iter().for_each(|m| match m {
+                //             NestedMeta::Meta(Meta::Path(path)) => {
+                //                 afters.push(path.clone());
+                //             }
+                //             _ => (),
+                //         });
+                //     }
+                // }
             }
-            NestedMeta::Meta(Meta::NameValue(nv)) => {
-                eprintln!("Can not parse argument: {}", nv.path.get_ident().unwrap());
+            // NestedMeta::Meta(Meta::NameValue(nv)) => {
+            //     eprintln!("Can not parse argument: {}", nv.path.get_ident().unwrap());
+            // }
+            Expr::MethodCall(call) => {
+                let ident = &call.method;
+                println!("Can not parse argument: MethodCall to {}", ident);
+            }
+            Expr::Assign(assign) => {
+                if let Expr::Path(ref fn_call) = *assign.left {
+                    println!(
+                        "Can not parse argument: Assign to {}",
+                        fn_call.path.segments.last().unwrap().ident
+                    );
+                }
             }
             _ => {
                 eprintln!("Unexpected argument: {}", idx);
@@ -116,8 +151,18 @@ pub(crate) fn wrap_mod(
         for item in items.iter_mut() {
             match item {
                 Item::Fn(item_fn) => {
-                    let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
-                    *item_fn = syn::parse2(wrapped_fn).unwrap();
+                    let with_existed = item_fn.attrs.iter().any(|item| {
+                        item.path()
+                            .segments
+                            .last()
+                            .unwrap()
+                            .ident
+                            .eq("macros::with")
+                    });
+                    if !with_existed {
+                        let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
+                        *item_fn = syn::parse2(wrapped_fn).unwrap();
+                    }
                 }
                 _ => {}
             }
@@ -133,7 +178,7 @@ pub(crate) fn wrap_struct_impl(
 ) -> proc_macro2::TokenStream {
     for item in item_impl.items.iter_mut() {
         match item {
-            ImplItem::Method(item_method) => {
+            ImplItem::Fn(item_method) => {
                 let item_fn = ItemFn {
                     attrs: item_method.attrs.clone(),
                     vis: item_method.vis.clone(),
@@ -150,7 +195,7 @@ pub(crate) fn wrap_struct_impl(
 }
 
 pub(crate) fn create_with(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr as AttributeArgs);
+    let args = parse_macro_input!(attr with AttributeArgs::parse_terminated);
     // extract before and after interceptor
     let (before, after) = get_before_after_paths(args);
     let input = parse_macro_input!(item as Item);

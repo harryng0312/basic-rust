@@ -1,3 +1,5 @@
+use chrono::NaiveDate;
+use log::info;
 use macros::with;
 #[allow(
     unused,
@@ -9,8 +11,6 @@ use macros::with;
     dead_code
 )]
 use macros::{record, sum};
-use chrono::NaiveDate;
-use log::info;
 use utils::common_utils::type_of;
 use utils::log::configuration::init_logger;
 
@@ -29,13 +29,13 @@ use utils::log::configuration::init_logger;
 
 // #[record(derive="Debug, Clone, Default")]
 // #[record]
-// #[record(derive(Debug, Clone, Default))]
-// #[derive(Debug)]
-// pub struct User {
-//     id: i64,
-//     username: String,
-//     dob: NaiveDate,
-// }
+#[record(derive(Debug, Clone, Default))]
+#[derive(Debug, Clone, Default)]
+pub struct User {
+    id: i64,
+    username: String,
+    dob: NaiveDate,
+}
 fn log_before(fn_name: &str, fn_params: &[&dyn std::fmt::Debug]) {
     info!("before fn: {}", fn_name);
 }

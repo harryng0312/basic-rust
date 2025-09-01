@@ -1,9 +1,9 @@
-use std::process::exit;
 use druid::widget::{Align, Button, Flex, Label, TextBox};
 use druid::{
-    AppLauncher, Data, Env, Event, EventCtx, Lens, LifeCycle, LifeCycleCtx,
-    PlatformError, UpdateCtx, Widget, WidgetExt, WindowDesc,
+    AppLauncher, Data, Env, Event, EventCtx, Lens, LifeCycle, LifeCycleCtx, PlatformError,
+    UpdateCtx, Widget, WidgetExt, WindowDesc,
 };
+use std::process::exit;
 use utils::log::configuration::init_logger;
 
 #[derive(Clone, Data, Lens)]
@@ -67,8 +67,7 @@ impl<W: Widget<AppState>> druid::widget::Controller<AppState, W> for MyControlle
 }
 
 fn build_ui() -> impl Widget<AppState> {
-    let label = Label::new(|data: &AppState, _env: &Env| data.message.clone())
-        .with_text_size(18.0);
+    let label = Label::new(|data: &AppState, _env: &Env| data.message.clone()).with_text_size(18.0);
     let textbox = TextBox::new()
         .with_placeholder("Nhập tên")
         .lens(AppState::name);
@@ -86,7 +85,7 @@ fn build_ui() -> impl Widget<AppState> {
             .with_child(label)
             .padding(20.0),
     )
-        .controller(MyController) // Gắn controller ở đây
+    .controller(MyController) // Gắn controller ở đây
 }
 
 pub fn init_app() -> Result<(), PlatformError> {

@@ -1,7 +1,7 @@
-use std::sync::Arc;
-use tokio::sync::{Semaphore, OwnedSemaphorePermit};
 use futures::{stream::FuturesUnordered, StreamExt};
+use std::sync::Arc;
 use tokio::sync::mpsc;
+use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tokio::time::{sleep, Duration};
 
 #[tokio::test]

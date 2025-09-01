@@ -15,7 +15,9 @@ mod test_ds {
     };
     use p256::elliptic_curve::consts::U64;
     use p256::elliptic_curve::generic_array::GenericArray;
-    use p256::pkcs8::{DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, LineEnding};
+    use p256::pkcs8::{
+        DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, LineEnding,
+    };
     use pem::Pem;
     use utils::log::configuration::init_logger;
 
@@ -81,10 +83,16 @@ mod test_ds {
             let priv_key: SigningKey = SigningKey::from_slice(&signing_key_bytes).unwrap();
             let pub_key: VerifyingKey = VerifyingKey::from(&priv_key);
 
-            let priv_pem = priv_key.to_pkcs8_der().unwrap()
-                .to_pem("PRIVATE KEY", LineEnding::LF).unwrap();
-            let pub_pem = pub_key.to_public_key_der().unwrap()
-                .to_pem("PUBLIC KEY", LineEnding::LF).unwrap();
+            let priv_pem = priv_key
+                .to_pkcs8_der()
+                .unwrap()
+                .to_pem("PRIVATE KEY", LineEnding::LF)
+                .unwrap();
+            let pub_pem = pub_key
+                .to_public_key_der()
+                .unwrap()
+                .to_pem("PUBLIC KEY", LineEnding::LF)
+                .unwrap();
             priv_key_str = priv_pem.to_string();
             pub_key_str = pub_pem.to_string();
             info!("Private Key:\n{}\n", priv_key_str);
@@ -99,13 +107,17 @@ mod test_ds {
             let mut priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
             let sign: Signature = priv_key.sign(data_bin);
             sign_vec_bin = sign.to_bytes().to_vec();
-            info!("Signature:{}", to_base64(sign_vec_bin.as_slice()).unwrap().to_string());
+            info!(
+                "Signature:{}",
+                to_base64(sign_vec_bin.as_slice()).unwrap().to_string()
+            );
         }
 
         // Verify
         {
             let mut pub_key = VerifyingKey::from_public_key_pem(pub_key_str.as_str()).unwrap();
-            let sign_bytes: GenericArray<u8, U64> = GenericArray::from_slice(sign_vec_bin.as_slice()).to_owned();
+            let sign_bytes: GenericArray<u8, U64> =
+                GenericArray::from_slice(sign_vec_bin.as_slice()).to_owned();
             // let signature_array: SignatureBytes<NistP256> = GenericArray::clone_from_slice(sign_vec_bin.as_slice());
             let signature: Signature = Signature::from_bytes(&sign_bytes).unwrap();
             let verified_result = pub_key.verify(data_bin, &signature).is_ok();
