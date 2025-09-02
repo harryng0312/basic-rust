@@ -5888,6 +5888,7 @@ dependencies = [
  "log",
  "macros",
  "once_cell",
+ "paste",
  "serde",
  "tokio",
  "tokio-postgres",

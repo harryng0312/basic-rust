@@ -128,14 +128,10 @@ pub(crate) fn wrap_mod(
         for item in items.iter_mut() {
             match item {
                 Item::Fn(item_fn) => {
-                    let with_existed = item_fn.attrs.iter().any(|item| {
-                        item.path()
-                            .segments
-                            .last()
-                            .unwrap()
-                            .ident
-                            .eq("macros::with")
-                    });
+                    let with_existed = item_fn
+                        .attrs
+                        .iter()
+                        .any(|item| item.path().segments.last().unwrap().ident.eq("utils::with"));
                     if !with_existed {
                         let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
                         *item_fn = syn::parse2(wrapped_fn).unwrap();

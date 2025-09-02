@@ -90,7 +90,7 @@ fn test_pbkdf2() {
         msg_digest,
         &mut key_data,
     )
-        .expect("PBKDF2 failed!");
+    .expect("PBKDF2 failed!");
     info!("After\t:Salt:{}", to_base64(salt.as_slice()).unwrap());
     info!("After\t:Key :{}", to_base64(key_data.as_slice()).unwrap());
     // info!("Salt: {:?}", salt.iter().map(|byte| format!("{:02x}", byte)).collect::<String>());

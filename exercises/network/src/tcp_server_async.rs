@@ -15,7 +15,7 @@ use log::{error, info, LevelFilter};
 use once_cell::sync::Lazy;
 use toml;
 use utils::log::configuration::{init_logger, load_config_file};
-// use crate::macros::configuration::{Configuration, init_logger, load_config_file};
+// use crate::utils::configuration::{Configuration, init_logger, load_config_file};
 
 // lazy_static! {
 //     static ref CONFIG :Configuration = toml::from_str(load_config_file().as_str()).unwrap();

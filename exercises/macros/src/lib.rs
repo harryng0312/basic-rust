@@ -1,10 +1,9 @@
 use proc_macro::TokenStream;
-
 mod adv_macros;
 mod macros;
 #[proc_macro_attribute]
 pub fn record(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    adv_macros::struct_data_adv::create_record(_attr, item)
+    adv_macros::util_struct::create_record(_attr, item)
 }
 
 #[proc_macro]

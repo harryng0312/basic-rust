@@ -85,7 +85,7 @@ fn build_ui() -> impl Widget<AppState> {
             .with_child(label)
             .padding(20.0),
     )
-        .controller(MyController) // Gắn controller ở đây
+    .controller(MyController) // Gắn controller ở đây
 }
 
 pub fn init_app() -> Result<(), PlatformError> {

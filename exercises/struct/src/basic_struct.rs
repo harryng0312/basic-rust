@@ -4,7 +4,7 @@ use std::process::Output;
 
 fn dot<N>(v1: &[N], v2: &[N]) -> N
 where
-    N: Add<Output=N> + Mul<Output=N> + Default + Copy,
+    N: Add<Output = N> + Mul<Output = N> + Default + Copy,
 {
     let mut total = N::default();
     for i in 0..v1.len() {
