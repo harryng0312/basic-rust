@@ -43,12 +43,9 @@ pub(crate) fn create_record(attr: TokenStream, item: TokenStream) -> TokenStream
                 if let Expr::Path(expr_path) = *call.func {
                     if expr_path.path.is_ident("derive") {
                         for arg in call.args {
-                            match arg {
-                                Expr::Path(path) => {
-                                    // println!("  List item Path: {}", path.clone().into_token_stream());
-                                    derives.push(path.path);
-                                }
-                                _ => {}
+                            if let Expr::Path(path) = arg {
+                                // println!("  List item Path: {}", path.clone().into_token_stream());
+                                derives.push(path.path);
                             }
                         }
                     }

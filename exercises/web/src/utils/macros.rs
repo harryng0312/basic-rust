@@ -1,11 +1,12 @@
-#[allow(
-    unused_variables,
-    dead_code,
-    unreachable_code,
-    missing_docs,
-    unused_mut,
-    unused_imports
-)]
+#[allow(warnings)]
+// #[allow(
+//     unused_variables,
+//     dead_code,
+//     unreachable_code,
+//     missing_docs,
+//     unused_mut,
+//     unused_imports
+// )]
 #[macro_export]
 macro_rules! record {
     {

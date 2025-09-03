@@ -29,15 +29,17 @@ fn get_before_after_paths(args: Punctuated<Expr, Token![,]>) -> (Vec<Path>, Vec<
                         let ident = &fn_call.path.segments.last().unwrap().ident;
                         match ident.to_string().as_str() {
                             "before" => {
-                                fn_args.iter().for_each(|itm| match itm {
-                                    Expr::Path(path) => befores.push(path.path.clone()),
-                                    _ => {}
+                                fn_args.iter().for_each(|itm| {
+                                    if let Expr::Path(path) = itm {
+                                        befores.push(path.path.clone())
+                                    }
                                 });
                             }
                             "after" => {
-                                fn_args.iter().for_each(|itm| match itm {
-                                    Expr::Path(path) => afters.push(path.path.clone()),
-                                    _ => {}
+                                fn_args.iter().for_each(|itm| {
+                                    if let Expr::Path(path) = itm {
+                                        afters.push(path.path.clone())
+                                    }
                                 });
                             }
                             _ => {}
@@ -126,18 +128,15 @@ pub(crate) fn wrap_mod(
 ) -> proc_macro2::TokenStream {
     if let Some((_, ref mut items)) = &mut item_mod.content {
         for item in items.iter_mut() {
-            match item {
-                Item::Fn(item_fn) => {
-                    let with_existed = item_fn
-                        .attrs
-                        .iter()
-                        .any(|item| item.path().segments.last().unwrap().ident.eq("utils::with"));
-                    if !with_existed {
-                        let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
-                        *item_fn = syn::parse2(wrapped_fn).unwrap();
-                    }
+            if let Item::Fn(item_fn) = item {
+                let with_existed = item_fn
+                    .attrs
+                    .iter()
+                    .any(|item| item.path().segments.last().unwrap().ident.eq("utils::with"));
+                if !with_existed {
+                    let wrapped_fn = wrap_fn(item_fn.clone(), before.clone(), after.clone());
+                    *item_fn = syn::parse2(wrapped_fn).unwrap();
                 }
-                _ => {}
             }
         }
     }
@@ -150,18 +149,15 @@ pub(crate) fn wrap_struct_impl(
     after: Vec<Path>,
 ) -> proc_macro2::TokenStream {
     for item in item_impl.items.iter_mut() {
-        match item {
-            ImplItem::Fn(item_method) => {
-                let item_fn = ItemFn {
-                    attrs: item_method.attrs.clone(),
-                    vis: item_method.vis.clone(),
-                    sig: item_method.sig.clone(),
-                    block: Box::new(item_method.block.clone()),
-                };
-                let wrap_method = wrap_fn(item_fn, before.clone(), after.clone());
-                *item_method = syn::parse2(wrap_method).unwrap();
-            }
-            _ => {}
+        if let ImplItem::Fn(item_method) = item {
+            let item_fn = ItemFn {
+                attrs: item_method.attrs.clone(),
+                vis: item_method.vis.clone(),
+                sig: item_method.sig.clone(),
+                block: Box::new(item_method.block.clone()),
+            };
+            let wrap_method = wrap_fn(item_fn, before.clone(), after.clone());
+            *item_method = syn::parse2(wrap_method).unwrap();
         }
     }
     quote! { #item_impl }

@@ -36,6 +36,7 @@ fn insert_batch(vals: &Vec<TestRecord>) -> AppResult<()> {
         insert_into(test_recs).values(vals).execute(connection)?;
         Ok(())
     })?;
+    let trans = ();
     Ok(())
 }
 
@@ -55,9 +56,12 @@ fn delete(_id: u64) -> AppResult<()> {
 mod tests {
     use crate::dto::test_dto::DtoTest;
     use crate::models::test_rec::TestRecord;
+    use crate::persistence::common::get_async_connection;
     use crate::persistence::test_rec_persistence::{find, insert, insert_batch};
     use chrono::{Local, NaiveDate, NaiveDateTime, Utc};
     use log::info;
+    use tokio::runtime::Runtime;
+    use tokio::task_local;
     use utils::log::configuration::init_logger;
 
     #[test]
@@ -93,6 +97,13 @@ mod tests {
             ls_test_recs.push(test_rec);
         }
         insert_batch(&ls_test_recs).unwrap();
+
+        let rt = Runtime::new().unwrap();
+
+        // let result = rt.block_on(async {
+        //     let conn = get_async_connection().await?;
+        //     ()
+        // });
 
         info!("Insert successful");
     }

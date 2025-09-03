@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 use ::utils::log::configuration::init_logger;
 
 pub(crate) mod dto;
