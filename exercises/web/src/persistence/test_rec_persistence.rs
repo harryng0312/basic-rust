@@ -5,7 +5,7 @@ use crate::persistence::common::get_connection;
 use anyhow::anyhow;
 use diesel::dsl::insert_into;
 use diesel::result::Error;
-use diesel::{Connection, ExpressionMethods, Insertable, QueryDsl, RunQueryDsl};
+use diesel::{Connection, ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::info;
 use utils::error::app_error::AppResult;
 
@@ -54,14 +54,11 @@ fn delete(_id: u64) -> AppResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::dto::test_dto::DtoTest;
     use crate::models::test_rec::TestRecord;
-    use crate::persistence::common::get_async_connection;
-    use crate::persistence::test_rec_persistence::{find, insert, insert_batch};
-    use chrono::{Local, NaiveDate, NaiveDateTime, Utc};
+    use crate::persistence::test_rec_persistence::{find, insert_batch};
+    use chrono::Local;
     use log::info;
     use tokio::runtime::Runtime;
-    use tokio::task_local;
     use utils::log::configuration::init_logger;
 
     #[test]

@@ -1,8 +1,7 @@
-use chrono::NaiveDateTime;
-use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
 // use macros::record;
 use crate::record;
-use serde::{Deserialize, Serialize};
+use chrono::NaiveDateTime;
+use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
 
 table! {
     #[sql_name="test_rec"]

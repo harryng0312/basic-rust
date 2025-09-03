@@ -1,4 +1,3 @@
-use log::info;
 use once_cell::sync::Lazy;
 use std::env;
 use tokio::sync::OnceCell;
@@ -8,11 +7,11 @@ use utils::error::app_error::AppResult;
 type RawDbConnection = diesel::PgConnection;
 type DbConnectionPool = diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<RawDbConnection>>;
 pub type DbConnection =
-    diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<RawDbConnection>>;
+diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<RawDbConnection>>;
 
 type AsyncDbConnectionPool = bb8::Pool<bb8_postgres::PostgresConnectionManager<NoTls>>;
 pub type AsyncDbConnection =
-    bb8::PooledConnection<'static, bb8_postgres::PostgresConnectionManager<NoTls>>;
+bb8::PooledConnection<'static, bb8_postgres::PostgresConnectionManager<NoTls>>;
 static DB_CONNECTION_POOL: Lazy<DbConnectionPool> =
     Lazy::new(|| create_conn_pool().expect("Could not create DB connection pool"));
 
@@ -21,13 +20,13 @@ static ASYNC_DB_CONNECTION_POOL: OnceCell<AsyncDbConnectionPool> = OnceCell::con
 
 fn create_conn_pool() -> AppResult<DbConnectionPool> {
     // dotenv().ok();
-    let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
+    let run_env = env::var("ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
-    let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
-    let db_name = env::var("DB_NAME").map_err(|e| e)?;
-    let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
-    let db_password = env::var("DB_PASSWORD").map_err(|e| e)?;
+    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+    let db_address = env::var("DB_ADDRESS")?;
+    let db_name = env::var("DB_NAME")?;
+    let db_username = env::var("DB_USERNAME")?;
+    let db_password = env::var("DB_PASSWORD")?;
     let database_url = format!("postgres://{db_username}:{db_password}@{db_address}/{db_name}");
     let manager = diesel::r2d2::ConnectionManager::<RawDbConnection>::new(database_url);
 
@@ -42,11 +41,11 @@ fn create_conn_pool() -> AppResult<DbConnectionPool> {
 pub async fn create_async_conn_pool() -> AppResult<AsyncDbConnectionPool> {
     let run_env = env::var("RUN_ENV").unwrap_or_else(|_| "dev".to_string());
     dotenvy::from_filename(format!(".env.{run_env}")).ok(); // success
-                                                            // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
-    let db_address = env::var("DB_ADDRESS").map_err(|e| e)?;
-    let db_name = env::var("DB_NAME").map_err(|e| e)?;
-    let db_username = env::var("DB_USERNAME").map_err(|e| e)?;
-    let db_password = env::var("DB_PASSWORD").map_err(|e| e)?;
+    // let database_url = env::var("DATABASE_URL").map_err(|e| e)?;
+    let db_address = env::var("DB_ADDRESS")?;
+    let db_name = env::var("DB_NAME")?;
+    let db_username = env::var("DB_USERNAME")?;
+    let db_password = env::var("DB_PASSWORD")?;
     let db_min_pool_size = env::var("DB_MIN_POOL_SIZE")
         .unwrap_or("5".to_string())
         .parse::<u32>()?;

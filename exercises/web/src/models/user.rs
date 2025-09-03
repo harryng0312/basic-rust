@@ -1,5 +1,5 @@
 use chrono::{NaiveDate, NaiveDateTime};
-use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
+use diesel::{table, Identifiable, Insertable, Queryable};
 use macros::record;
 
 table! {

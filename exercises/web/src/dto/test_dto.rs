@@ -1,7 +1,6 @@
 use chrono::NaiveDate;
 // use diesel::{AsChangeset, Identifiable, Insertable, Queryable};
 use macros::record;
-use serde::{Deserialize, Serialize};
 
 #[record(derive(Debug))]
 // #[derive(Debug, Serialize)]
