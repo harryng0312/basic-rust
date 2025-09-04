@@ -57,7 +57,7 @@ mod tests {
     use crate::models::test_rec::TestRecord;
     use crate::persistence::test_rec_persistence::{find, insert_batch};
     use chrono::Local;
-    use log::info;
+    use tracing::info;
     use tokio::runtime::Runtime;
     use utils::log::configuration::init_logger;
 

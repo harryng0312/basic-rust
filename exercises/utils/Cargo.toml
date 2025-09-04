@@ -7,8 +7,13 @@ edition = "2021"
 #proc-macro = true
 
 [dependencies]
+dotenvy = "^0"
 log = "^0"
-env_logger = "^0"
+#env_logger = "^0"
+tracing="^0"
+tracing-log = "^0"
+tracing-subscriber = { version = "^0", features = ["env-filter"] }
+tracing-appender = "^0"
 chrono = "^0"
 serde = { version = "^1", features = ["derive"] }
 bigdecimal = "^0"
