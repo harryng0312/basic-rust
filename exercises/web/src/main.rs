@@ -1,8 +1,6 @@
 // #![allow(warnings)]
 #![allow(clippy::too_many_arguments, unused_variables, dead_code)]
 
-use std::thread::sleep;
-use std::time::Duration;
 use tracing::info;
 use ::utils::log::configuration::init_logger;
 

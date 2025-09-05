@@ -48,7 +48,8 @@ pub fn init_logger() {
     let (stdout, _guard) = tracing_appender::non_blocking(std::io::stdout());
     guards.push(_guard);
 
-    GUARDS.set(guards).unwrap();
+    let _ = GUARDS.get_or_init(|| guards);
+
     // Bridge log crate -> tracing
     // tracing_log::LogTracer::init().expect("Failed to set LogTracer");
     // Init subscriber
