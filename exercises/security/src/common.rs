@@ -1,6 +1,5 @@
 use base64_stream::{FromBase64Reader, ToBase64Reader};
 use openssl::rand::rand_bytes;
-use rand::Rng;
 use std::error::Error;
 use std::io::{Cursor, Read};
 

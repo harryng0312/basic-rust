@@ -1,312 +1,160 @@
-use crate::common::gen_random_byte_arr;
-use log::{error, info};
-use openssl::symm::{Cipher, Crypter, Mode};
-use std::cmp::{max, min};
-use std::error::Error;
-use utils::log::configuration::init_logger;
-
-// #[test]
-pub fn test_aes_ctr() {
-    init_logger();
-    // prepare
-    let cipher = Cipher::aes_128_ctr();
-    let key_size = cipher.key_len();
-    let iv_size = cipher.iv_len().unwrap();
-    info!("key_size:{}, iv_size:{}", key_size, iv_size);
-    info!("block_size:{} bytes", cipher.block_size());
-
-    let mut key_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut key_bin).unwrap();
-    let mut iv_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut iv_bin).unwrap();
-    let data = "Đây là dữ liệu thử nghiệm mã hoá".as_bytes();
-    info!("Plain[{}]:{:?}", data.len(), data);
-    // encrypt
-    let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    {
-        let mut encryptor = Crypter::new(
-            cipher,
-            Mode::Encrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        let mut count = 0usize;
-        // count += encryptor.update(data, &mut cipher_data).unwrap();
-        let mut buff = vec![0u8; key_size];
-        for i in (0..data.len()).step_by(key_size) {
-            let _r = min(i + key_size, data.len());
-            buff.fill(0u8);
-            count += encryptor.update(&data[i.._r], &mut buff).unwrap();
-            cipher_data.extend(buff.as_slice());
-        }
-        buff.fill(0u8);
-        let f_count = encryptor.finalize(&mut buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            cipher_data.extend(buff.as_slice());
-        }
-        cipher_data.truncate(count);
-        info!("Encrypted[{}]: {:?}", count, cipher_data);
+use aes::Aes128;
+use anyhow::anyhow;
+use bytes::Bytes;
+use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
+use cbc::{Decryptor, Encryptor};
+use ctr::Ctr128BE;
+use log::info;
+use utils::error::app_error::AppResult;
+fn aes_ctr_encrypt(bit_length: usize, key: Bytes, iv: Bytes, plain: Bytes) -> AppResult<Bytes> {
+    let byte_len: usize = bit_length / 8;
+    if key.len() != byte_len || iv.len() != byte_len {
+        return Err(anyhow!(
+            "Can not encrypt with invalid key size:{}",
+            key.len()
+        ));
     }
-    // decrypt
-    {
-        let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(
-            cipher,
-            Mode::Decrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        let mut count = 0usize;
-        count += decryptor
-            .update(cipher_data.as_slice(), &mut plain_data)
-            .unwrap();
-        let mut buff: Vec<u8> = vec![0u8; key_size];
-        let f_count = decryptor.finalize(&mut *buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            plain_data.extend(buff.as_slice());
-        }
-        plain_data.truncate(count);
-        info!("Decrypted[{}]: {:?}", count, plain_data);
-        info!("Plain:{}", String::from_utf8_lossy(&plain_data));
+    let key = key.as_ref();
+    let iv = iv.as_ref();
+    let mut cipher = Ctr128BE::<Aes128>::new(key.into(), iv.into());
+    let mut encrypted: Vec<u8> = vec![];
+    let chunks = plain.chunks(byte_len);
+    for chunk in chunks {
+        let mut buffer = chunk.to_vec();
+        cipher.apply_keystream(&mut buffer);
+        encrypted.append(&mut buffer);
     }
+
+    Ok(Bytes::from(encrypted))
 }
 
-#[test]
-fn test_aes_gcm() {
-    init_logger();
-    // prepare
-    let cipher = Cipher::aes_256_gcm();
-    let key_size = cipher.key_len();
-    let iv_size = cipher.iv_len().unwrap();
-    info!("key_size:{}, iv_size:{}", key_size, iv_size);
-    info!("block_size:{} bytes", cipher.block_size());
-
-    let mut key_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut key_bin).unwrap();
-    let mut iv_bin: Vec<u8> = vec![0u8; iv_size];
-    gen_random_byte_arr(&mut iv_bin).unwrap();
-    let mut aad_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut aad_bin).unwrap();
-    let data = "Đây là dữ liệu thử nghiệm mã hoá".as_bytes();
-    info!("Plain[{}]:{:?}", data.len(), data);
-    // encrypt
-    let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    let mut tag_data: Vec<u8> = vec![0u8; 128 / 8]; // tag length is fixed to 128bit
-    {
-        let mut encryptor = Crypter::new(
-            cipher,
-            Mode::Encrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        // encryptor.set_tag_len(key_size).unwrap();
-        // tag_data.resize(key_size, 0u8);
-        let mut count = 0usize;
-        // count += encryptor.update(data, &mut cipher_data).unwrap();
-        encryptor.aad_update(aad_bin.as_slice()).unwrap();
-        let mut buff = vec![0u8; key_size];
-        for i in (0..data.len()).step_by(key_size) {
-            let b_right = min(i + key_size, data.len());
-            count += encryptor.update(&data[i..b_right], &mut buff).unwrap();
-            cipher_data.extend(buff.as_slice());
-        }
-        buff.fill(0u8);
-        let f_count = encryptor.finalize(&mut buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            cipher_data.extend(buff.as_slice());
-        }
-        cipher_data.truncate(count);
-        encryptor.get_tag(&mut tag_data).unwrap();
-        info!("Encrypted[{}]: {:?}", count, cipher_data);
-        info!("Encrypted tag len: {}", tag_data.len());
-    }
-    // decrypt
-    {
-        let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(
-            cipher,
-            Mode::Decrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        let mut count = 0usize;
-        decryptor.aad_update(aad_bin.as_slice()).unwrap();
-        decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor
-            .update(cipher_data.as_slice(), &mut plain_data)
-            .unwrap();
-        let mut buff: Vec<u8> = vec![0u8; key_size];
-        let f_count = decryptor.finalize(&mut *buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            plain_data.extend(buff.as_slice());
-        }
-        plain_data.truncate(count);
-        info!("Decrypted[{}]: {:?}", count, plain_data);
-        info!("Plain:{}", String::from_utf8_lossy(&plain_data));
-    }
+fn aes_ctr_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encryped: Bytes) -> AppResult<Bytes> {
+    aes_ctr_encrypt(bit_length, key, iv, encryped)
 }
 
-#[test]
-fn test_aes_xts() {
-    init_logger();
-    // prepare
-    let cipher = Cipher::aes_256_xts();
-    let key_size = cipher.key_len();
-    let iv_size = cipher.iv_len().unwrap();
-    info!("key_size:{}, iv_size:{}", key_size, iv_size);
-    info!("block_size:{} bytes", cipher.block_size());
-
-    let mut key_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut key_bin).unwrap();
-    let mut iv_bin: Vec<u8> = vec![0u8; iv_size];
-    gen_random_byte_arr(&mut iv_bin).unwrap();
-    // let mut aad_bin: Vec<u8> = vec![0u8; key_size];
-    // gen_random_byte_arr(&mut aad_bin).unwrap();
-    let data = "Đây là dữ liệu thử nghiệm mã hoá".as_bytes();
-    info!("Plain[{}]:{:?}", data.len(), data);
-    // encrypt
-    let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    // let mut tag_data: Vec<u8> = vec![0u8; 16];
-    {
-        let mut encryptor = Crypter::new(
-            cipher,
-            Mode::Encrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        cipher.key_len();
-        let mut count = 0usize;
-        // count += encryptor.update(data, &mut cipher_data).unwrap();
-        // encryptor.aad_update(aad_bin.as_slice()).expect("Cannot add AAD!");
-        let mut buff = vec![0u8; key_size];
-        for i in (0..data.len()).step_by(key_size) {
-            let b_right = min(i + key_size, data.len());
-            count += encryptor.update(&data[i..b_right], &mut buff).unwrap();
-            cipher_data.extend(buff.as_slice());
-        }
-        buff.fill(0u8);
-        let f_count = encryptor.finalize(&mut buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            cipher_data.extend(buff.as_slice());
-        }
-        cipher_data.truncate(count);
-        // encryptor.get_tag(&mut tag_data).unwrap();
-        info!("Encrypted[{}]: {:?}", count, cipher_data);
+fn aes_cbc_encrypt(bit_length: usize, key: Bytes, iv: Bytes, plain: Bytes) -> AppResult<Bytes> {
+    let block_len: usize = bit_length / 8;
+    if key.len() != block_len || iv.len() != block_len {
+        return Err(anyhow!(
+            "Can not encrypt with invalid key size:{}",
+            key.len()
+        ));
     }
-    // decrypt
-    {
-        let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(
-            cipher,
-            Mode::Decrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        let mut count = 0usize;
-        // decryptor.aad_update(aad_bin.as_slice()).unwrap();
-        // decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor
-            .update(cipher_data.as_slice(), &mut plain_data)
-            .unwrap();
-        let mut buff: Vec<u8> = vec![0u8; key_size];
-        let f_count = decryptor.finalize(&mut *buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            plain_data.extend(buff.as_slice());
+    let key = key.as_ref();
+    let iv = iv.as_ref();
+    let mut cipher = Encryptor::<Aes128>::new(key.into(), iv.into());
+    let mut encrypted: Vec<u8> = vec![];
+    let chunks = plain.chunks(block_len);
+    // info!("number of chunks: {}", chunks.len());
+    let need_pad_final = plain.len() % block_len == 0;
+    for chunk in chunks {
+        let mut buffer = [0u8; 16];
+        buffer[..chunk.len()].copy_from_slice(chunk);
+        if chunk.len() < block_len {
+            // padding PKCS7
+            let pad = (block_len - chunk.len()) as u8;
+            for i in chunk.len()..16 {
+                buffer[i] = pad;
+            }
         }
-        plain_data.truncate(count);
-        info!("Decrypted[{}]: {:?}", count, plain_data);
-        info!("Plain:{}", String::from_utf8_lossy(&plain_data));
+        cipher.encrypt_block_mut((&mut buffer).into());
+        encrypted.extend_from_slice(&buffer);
     }
+    // need to pad final block
+    if need_pad_final {
+        let buffer: &mut [u8] = &mut vec![block_len as u8; block_len];
+        cipher.encrypt_block_mut(buffer.into());
+        encrypted.extend_from_slice(buffer);
+    }
+    Ok(Bytes::from(encrypted))
 }
 
-#[test]
-fn test_chacha20_poly1305() {
-    init_logger();
-    // prepare
-    let cipher = Cipher::chacha20_poly1305();
-    let key_size = cipher.key_len();
-    let iv_size = cipher.iv_len().unwrap();
-    info!("key_size:{}, iv_size:{}", key_size, iv_size);
-    info!("block_size:{} bytes", cipher.block_size());
-
-    let mut key_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut key_bin).unwrap();
-    let mut iv_bin: Vec<u8> = vec![0u8; iv_size];
-    gen_random_byte_arr(&mut iv_bin).unwrap();
-    let mut aad_bin: Vec<u8> = vec![0u8; key_size];
-    gen_random_byte_arr(&mut aad_bin).unwrap();
-    let data = "Đây là dữ liệu thử nghiệm mã hoá".as_bytes();
-    info!("Plain[{}]: {:?}", data.len(), data);
-    // encrypt
-    let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    let mut tag_data: Vec<u8> = vec![0u8; 16];
-    {
-        let mut encryptor = Crypter::new(
-            cipher,
-            Mode::Encrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        cipher.key_len();
-        let mut count = 0usize;
-        // count += encryptor.update(data, &mut cipher_data).unwrap();
-        encryptor
-            .aad_update(aad_bin.as_slice())
-            .expect("Cannot add AAD!");
-        let mut buff = vec![0u8; key_size];
-        for i in (0..data.len()).step_by(key_size) {
-            let b_right = min(i + key_size, data.len());
-            count += encryptor.update(&data[i..b_right], &mut buff).unwrap();
-            cipher_data.extend(buff.as_slice());
-        }
-        buff.fill(0u8);
-        let f_count = encryptor.finalize(&mut buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            cipher_data.extend(buff.as_slice());
-        }
-        cipher_data.truncate(count);
-        encryptor.get_tag(&mut tag_data).unwrap();
-        info!("Encrypted[{}]: {:?}", count, cipher_data);
-        info!("Tag size:{}", tag_data.len());
+fn aes_cbc_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encrypted: Bytes) -> AppResult<Bytes> {
+    let block_len: usize = bit_length / 8;
+    if key.len() != block_len || iv.len() != block_len {
+        return Err(anyhow!(
+            "Can not encrypt with invalid key size:{}",
+            key.len()
+        ));
     }
-    // decrypt
-    {
-        let mut plain_data: Vec<u8> = vec![0u8; cipher_data.len()];
-        let mut decryptor = Crypter::new(
-            cipher,
-            Mode::Decrypt,
-            key_bin.as_slice(),
-            Some(iv_bin.as_slice()),
-        )
-            .unwrap();
-        let mut count = 0usize;
-        decryptor.aad_update(aad_bin.as_slice()).unwrap();
-        decryptor.set_tag(tag_data.as_slice()).unwrap();
-        count += decryptor
-            .update(cipher_data.as_slice(), &mut plain_data)
-            .unwrap();
-        let mut buff: Vec<u8> = vec![0u8; key_size];
-        let f_count = decryptor.finalize(&mut buff).unwrap();
-        if f_count > 0 {
-            count += f_count;
-            cipher_data.extend(buff.as_slice());
+    let key = key.as_ref();
+    let iv = iv.as_ref();
+    let mut cipher = Decryptor::<Aes128>::new(key.into(), iv.into());
+    let mut decrypted: Vec<u8> = vec![];
+    let chunks = encrypted.chunks(block_len);
+
+    for chunk in chunks {
+        let mut buffer: [u8; 16] = chunk.try_into()?;
+        cipher.decrypt_block_mut((&mut buffer).into());
+        decrypted.extend_from_slice(&buffer);
+    }
+
+    // Remove PKCS7 padding
+    info!("Last decrypted: {:?}", decrypted);
+    if let Some(&pad) = decrypted.last() {
+        let pad_len = pad as usize;
+        let len = decrypted.len();
+        if pad_len <= block_len && pad_len <= len {
+            decrypted.truncate(len - pad_len);
         }
-        plain_data.truncate(count);
-        info!("Decrypted[{}]: {:?}", count, plain_data);
-        info!("Plain: {}", String::from_utf8_lossy(&plain_data));
+        info!(
+            "Removed Padding, pad_len: {}, decrypted_len: {}",
+            pad_len,
+            decrypted.len()
+        );
+    }
+    Ok(Bytes::from(decrypted))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use log::info;
+    use rand_core::{OsRng, RngCore};
+    use utils::log::configuration::init_logger;
+    #[test]
+    fn test_aes_ctr() {
+        init_logger();
+        let mut rand_bytes = vec![0u8; 32];
+        OsRng.fill_bytes(rand_bytes.as_mut_slice());
+        let plain = Bytes::from(format!(
+            "hello world hello world hello world: {}",
+            rand_bytes.len()
+        ));
+        let key = Bytes::from(rand_bytes[0..16].to_vec());
+        let iv = Bytes::from(rand_bytes[16..32].to_vec());
+        info!("Plain: {:?}", plain);
+        let encrypted = aes_ctr_encrypt(128, key.clone(), iv.clone(), plain);
+        let encrypted = encrypted.unwrap();
+        info!(
+            "Cipher: {:?} len:{}",
+            encrypted.as_ref(),
+            encrypted.as_ref().len()
+        );
+        let plain = aes_ctr_decrypt(128, key, iv, encrypted);
+        info!("Plain after decrypt: {:?}", plain.unwrap());
+    }
+
+    #[test]
+    fn test_aes_cbc() {
+        init_logger();
+        let mut rand_bytes = vec![0u8; 32];
+        OsRng.fill_bytes(rand_bytes.as_mut_slice());
+        let plain = Bytes::from(format!(
+            "hello world hello world hello: {}",
+            rand_bytes.len()
+        ));
+        let key = Bytes::from(rand_bytes[0..16].to_vec());
+        let iv = Bytes::from(rand_bytes[16..32].to_vec());
+        info!("Plain: {:?} {}", plain, plain.len());
+        let encrypted = aes_cbc_encrypt(128, key.clone(), iv.clone(), plain);
+        let encrypted = encrypted.unwrap();
+        info!(
+            "Cipher: {:?} len:{}",
+            encrypted.as_ref(),
+            encrypted.as_ref().len()
+        );
+        let plain = aes_cbc_decrypt(128, key, iv, encrypted);
+        info!("Plain after decrypt: {:?}", plain.unwrap());
     }
 }

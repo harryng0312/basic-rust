@@ -6,7 +6,6 @@ use openssl::hash::{hash, Hasher, MessageDigest};
 use openssl::pkcs5::pbkdf2_hmac;
 use openssl::pkey::PKey;
 use openssl::sign::Signer;
-use rand::Rng;
 use std::error::Error;
 use std::io::{Cursor, Read, Write};
 use utils::log::configuration::init_logger;
