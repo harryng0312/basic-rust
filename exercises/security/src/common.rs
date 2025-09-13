@@ -1,11 +1,11 @@
+use anyhow::anyhow;
 use base64_stream::{FromBase64Reader, ToBase64Reader};
 use openssl::rand::rand_bytes;
-use std::error::Error;
-use std::io::{Cursor, Read};
-
 use rand_core::{OsRng, RngCore};
+use std::io::{Cursor, Read};
+use utils::error::app_error::AppResult;
 
-pub fn to_base64(data: &[u8]) -> Result<String, Box<dyn Error>> {
+pub fn to_base64(data: &[u8]) -> AppResult<String> {
     let mut reader = ToBase64Reader::new(Cursor::new(data));
     // let mut reader = ToBase64Reader::new(data);
     let mut buff = String::new();
@@ -13,22 +13,22 @@ pub fn to_base64(data: &[u8]) -> Result<String, Box<dyn Error>> {
     Ok(buff)
 }
 
-pub fn from_base64(b64_str: &String) -> Result<Vec<u8>, Box<dyn Error>> {
+pub fn from_base64(b64_str: &String) -> AppResult<Vec<u8>> {
     let mut buff: Vec<u8> = vec![];
     let mut reader = FromBase64Reader::new(Cursor::new(b64_str));
     let _ = reader.read_to_end(&mut buff);
     Ok(buff)
 }
 
-pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> Result<(), Box<dyn Error>> {
+pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> AppResult<()> {
     // let mut thread_rng = rand::thread_rng();
     // let mut rand_v: Vec<u8>= vec![0u8; arr_len];
     // thread_rng.fill(&mut *rand_v);
-    rand_bytes(&mut *rand_v).map_err(|e| Box::new(e) as Box<dyn Error>)
+    rand_bytes(rand_v.as_mut_slice()).map_err(|e| anyhow!(e))
     // Ok(())
 }
 
-pub fn gen_secured_random_byte_arr(arr_inp: &mut [u8]) -> Result<(), Box<dyn Error>> {
+pub fn gen_secured_random_byte_arr(arr_inp: &mut [u8]) -> AppResult<()> {
     // let mut rand_v: Vec<u8> = vec![0u8; arr_len];
     OsRng.fill_bytes(arr_inp);
     // Ok(rand_v)

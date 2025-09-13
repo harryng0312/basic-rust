@@ -94,7 +94,7 @@ fn aes_cbc_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encrypted: Bytes) -
     }
 
     // Remove PKCS7 padding
-    info!("Last decrypted: {:?}", decrypted);
+    info!("Before unpadding decrypted: {:?}", decrypted);
     if let Some(&pad) = decrypted.last() {
         let pad_len = pad as usize;
         let len = decrypted.len();
@@ -113,9 +113,13 @@ fn aes_cbc_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encrypted: Bytes) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::to_base64;
     use log::info;
+    use openssl::symm::{Cipher, Crypter, Mode};
     use rand_core::{OsRng, RngCore};
+    use std::cmp::min;
     use utils::log::configuration::init_logger;
+
     #[test]
     fn test_aes_ctr() {
         init_logger();
@@ -148,18 +152,28 @@ mod tests {
             "hello world hello world hello: {}",
             rand_bytes.len()
         ));
+        let key_len = 128;
         let key = Bytes::from(rand_bytes[0..16].to_vec());
         let iv = Bytes::from(rand_bytes[16..32].to_vec());
-        info!("Plain: {:?} {}", plain, plain.len());
-        let encrypted = aes_cbc_encrypt(128, key.clone(), iv.clone(), plain);
+        info!(
+            "Key: {:?}, IV: {:?}",
+            to_base64(key.as_ref()),
+            to_base64(iv.as_ref())
+        );
+        info!("Plain: {:?} {}", to_base64(plain.as_ref()), plain.len());
+        let encrypted = aes_cbc_encrypt(key_len, key.clone(), iv.clone(), plain.clone());
         let encrypted = encrypted.unwrap();
         info!(
-            "Cipher: {:?} len:{}",
-            encrypted.as_ref(),
-            encrypted.as_ref().len()
+            "Encrypted: {:?}, len:{}",
+            to_base64(encrypted.as_ref()),
+            encrypted.len()
         );
-        let plain = aes_cbc_decrypt(128, key, iv, encrypted);
-        let plain = plain.unwrap();
-        info!("Plain after decrypt: {:?}, len:{}", plain, plain.len());
+        let decrypted = aes_cbc_decrypt(key_len, key, iv, encrypted);
+        let decrypted = decrypted.unwrap();
+        info!(
+            "Decrypted: {:?}, len:{}",
+            to_base64(decrypted.as_ref()),
+            decrypted.len()
+        );
     }
 }

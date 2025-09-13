@@ -4693,6 +4693,7 @@ dependencies = [
  "base64-stream",
  "bytes",
  "cbc",
+ "cipher",
  "ctr",
  "generic-array 1.2.0",
  "libc",
