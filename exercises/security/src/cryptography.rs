@@ -4,6 +4,8 @@ use bytes::Bytes;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
 use cbc::{Decryptor, Encryptor};
 use ctr::Ctr128BE;
+use log::info;
+use std::ops::{Deref, DerefMut};
 use utils::error::app_error::AppResult;
 fn aes_ctr_encrypt(bit_length: usize, key: Bytes, iv: Bytes, plain: Bytes) -> AppResult<Bytes> {
     let byte_len: usize = bit_length / 8;
@@ -44,24 +46,27 @@ fn aes_cbc_encrypt(bit_length: usize, key: Bytes, iv: Bytes, plain: Bytes) -> Ap
     let mut cipher = Encryptor::<Aes128>::new(key.into(), iv.into());
     let mut encrypted: Vec<u8> = vec![];
     let chunks = plain.chunks(block_len);
-    // info!("number of chunks: {}", chunks.len());
     let need_pad_final = plain.len() % block_len == 0;
+    let mut buffer = vec![0; block_len];
     for chunk in chunks {
-        let mut buffer = [0u8; 16];
-        buffer[..chunk.len()].copy_from_slice(chunk);
+        buffer.fill(0u8);
+        let buf = buffer.as_mut_slice();
+        // buffer.extend(repeat(0u8).take(block_len)); // [0u8; block_len];
+        buf[..chunk.len()].copy_from_slice(chunk);
         if chunk.len() < block_len {
             // padding PKCS7
             let pad = (block_len - chunk.len()) as u8;
-            for i in chunk.len()..16 {
-                buffer[i] = pad;
-            }
+            buf[chunk.len()..block_len].iter_mut().for_each(|item| {
+                *item = pad;
+            });
         }
-        cipher.encrypt_block_mut((&mut buffer).into());
-        encrypted.extend_from_slice(&buffer);
+        cipher.encrypt_block_mut(buf.into());
+        encrypted.extend_from_slice(&buf);
     }
     // need to pad final block
     if need_pad_final {
-        let buffer: &mut [u8] = &mut vec![block_len as u8; block_len];
+        buffer.fill(block_len as u8);
+        let buffer = buffer.as_mut_slice();
         cipher.encrypt_block_mut(buffer.into());
         encrypted.extend_from_slice(buffer);
     }
@@ -83,13 +88,13 @@ fn aes_cbc_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encrypted: Bytes) -
     let chunks = encrypted.chunks(block_len);
 
     for chunk in chunks {
-        let mut buffer: [u8; 16] = chunk.try_into()?;
-        cipher.decrypt_block_mut((&mut buffer).into());
-        decrypted.extend_from_slice(&buffer);
+        let buffer = &mut *chunk.to_vec();
+        cipher.decrypt_block_mut(buffer.into());
+        decrypted.extend_from_slice(buffer);
     }
 
     // Remove PKCS7 padding
-    // info!("Last decrypted: {:?}", decrypted);
+    info!("Last decrypted: {:?}", decrypted);
     if let Some(&pad) = decrypted.last() {
         let pad_len = pad as usize;
         let len = decrypted.len();
@@ -154,6 +159,7 @@ mod tests {
             encrypted.as_ref().len()
         );
         let plain = aes_cbc_decrypt(128, key, iv, encrypted);
-        info!("Plain after decrypt: {:?}", plain.unwrap());
+        let plain = plain.unwrap();
+        info!("Plain after decrypt: {:?}, len:{}", plain, plain.len());
     }
 }
