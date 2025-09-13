@@ -123,7 +123,7 @@ fn aes_gcm_encrypt(
     plain: &[u8],
 ) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
-    if key.len() != block_size || nonce.len() != block_size || aad.len() != block_size {
+    if key.len() != block_size || nonce.len() != block_size {
         return Err(anyhow!(
             "Can not encrypt with invalid key size:{}",
             key.len()
@@ -150,7 +150,7 @@ fn aes_gcm_decrypt(
     encrypted_tag: &[u8],
 ) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
-    if key.len() != block_size || nonce.len() != block_size || aad.len() != block_size {
+    if key.len() != block_size || nonce.len() != block_size {
         return Err(anyhow!(
             "Can not encrypt with invalid key size:{}",
             key.len()
@@ -255,11 +255,12 @@ mod tests {
         let key_len = 128;
         let key = rand_bytes[0..16].to_vec();
         let iv = rand_bytes[16..32].to_vec();
-        let aad = rand_bytes[32..48].to_vec();
+        let aad = rand_bytes[32..44].to_vec();
         info!(
-            "Key: {:?}, IV: {:?}",
+            "Key: {:?}, IV: {:?} AAD:{:?}",
             to_hex(key.as_ref()),
-            to_hex(iv.as_ref())
+            to_hex(iv.as_ref()),
+            to_hex(aad.as_ref())
         );
         info!("Plain: {:?} {}", to_hex(plain.as_ref()), plain.len());
         let encrypted = aes_gcm_encrypt(
