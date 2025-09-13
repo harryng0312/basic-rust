@@ -1,8 +1,5 @@
 use aes::Aes128;
-use aes_gcm::aead::generic_array::GenericArray;
-use aes_gcm::aead::{Aead, Payload};
-use aes_gcm::{AeadInPlace, Aes128Gcm};
-use aes_gcm::{KeyInit, Nonce};
+use aes_gcm_stream::{Aes128GcmStreamDecryptor, Aes128GcmStreamEncryptor};
 use anyhow::anyhow;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
 use cbc::{Decryptor, Encryptor};
@@ -126,37 +123,22 @@ fn aes_gcm_encrypt(
     plain: &[u8],
 ) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
-    if key.len() != block_size || nonce.len() != block_size * 3 / 4 || aad.len() != block_size {
+    if key.len() != block_size || nonce.len() != block_size || aad.len() != block_size {
         return Err(anyhow!(
             "Can not encrypt with invalid key size:{}",
             key.len()
         ));
     }
-    let nonce: &GenericArray<u8, U12> = Nonce::from_slice(nonce);
-    let cipher = Aes128Gcm::new(key.into());
+    let key: [u8; 16] = key.try_into()?;
+    let mut cipher = Aes128GcmStreamEncryptor::new(key, nonce);
     let mut encrypted: Vec<u8> = vec![];
-    let mut buffer = vec![0u8; plain.len()];
-    buffer[..plain.len()].copy_from_slice(plain);
-
-    // let chunks = plain.chunks(block_size);
-    // for chunk in chunks {
-    //     buffer.fill(0u8);
-    //     // let mut buff = buffer.as_mut_slice();
-    //     // let payload = Payload {
-    //     //     msg: chunk,
-    //     //     aad: aad,
-    //     // };
-    //     // let buff = cipher.e(nonce, payload).expect("Can not encrypt");
-    //     buffer[..chunk.len()].copy_from_slice(chunk);
-    //     cipher
-    //         .encrypt_in_place(nonce, b"", &mut buffer)
-    //         .map_err(|e| anyhow!(e))?;
-    //     encrypted.extend(&buffer);
-    // }
-    cipher
-        .encrypt_in_place(nonce, aad, &mut buffer)
-        .map_err(|e| anyhow!(e))?;
-    encrypted.extend_from_slice(&buffer);
+    cipher.init_adata(aad);
+    for chunk in plain.chunks(block_size) {
+        encrypted.extend(cipher.update(chunk));
+    }
+    let (enc_data, tag) = cipher.finalize();
+    encrypted.extend(enc_data);
+    encrypted.extend(tag);
     Ok(encrypted)
 }
 
@@ -165,30 +147,37 @@ fn aes_gcm_decrypt(
     key: &[u8],
     nonce: &[u8],
     aad: &[u8],
-    encrypted: &[u8],
+    encrypted_tag: &[u8],
 ) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
-    if key.len() != block_size || nonce.len() != block_size * 3 / 4 || aad.len() != block_size {
+    if key.len() != block_size || nonce.len() != block_size || aad.len() != block_size {
         return Err(anyhow!(
             "Can not encrypt with invalid key size:{}",
             key.len()
         ));
     }
-    let nonce: &GenericArray<u8, U12> = Nonce::from_slice(nonce);
-    let cipher = Aes128Gcm::new(key.into());
+    let key: [u8; 16] = key.try_into()?;
+    let mut cipher = Aes128GcmStreamDecryptor::new(key, nonce);
     let mut decrypted: Vec<u8> = vec![];
-    let mut buffer = vec![0u8; encrypted.len()];
-    buffer[..encrypted.len()].copy_from_slice(encrypted);
-    cipher
-        .decrypt_in_place(nonce, aad, &mut buffer)
-        .map_err(|e| anyhow!(e))?;
-    decrypted.extend_from_slice(&buffer);
-    Ok(decrypted)
+    cipher.init_adata(aad);
+    // let encrypted = &encrypted_tag[encrypted_tag.len() - 16..];
+    // let tag = &encrypted_tag[..encrypted_tag.len() - 16];
+    let encrypted = encrypted_tag;
+    for chunk in encrypted.chunks(block_size) {
+        decrypted.extend(cipher.update(chunk));
+    }
+    let rs = cipher.finalize();
+    match rs {
+        Ok(rs) => {
+            decrypted.extend(rs);
+            Ok(decrypted)
+        }
+        Err(e) => Err(anyhow!(e)),
+    }
 }
 
 #[cfg(test)]
 mod tests {
-
     #![allow(clippy::too_many_arguments, unused_variables, dead_code)]
     use super::*;
     use crate::common::to_hex;
@@ -265,8 +254,8 @@ mod tests {
         let plain = format!("hello world hello world hello: {}", rand_bytes.len());
         let key_len = 128;
         let key = rand_bytes[0..16].to_vec();
-        let iv = rand_bytes[16..28].to_vec();
-        let aad = rand_bytes[28..44].to_vec();
+        let iv = rand_bytes[16..32].to_vec();
+        let aad = rand_bytes[32..48].to_vec();
         info!(
             "Key: {:?}, IV: {:?}",
             to_hex(key.as_ref()),
