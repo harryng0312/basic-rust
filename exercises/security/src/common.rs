@@ -19,7 +19,17 @@ pub fn from_base64(b64_str: &String) -> AppResult<Vec<u8>> {
     let _ = reader.read_to_end(&mut buff);
     Ok(buff)
 }
+#[allow(dead_code)]
+pub fn to_hex(data: &[u8] ) -> AppResult<String> {
+    Ok(hex::encode(data))
+}
 
+#[allow(dead_code)]
+pub fn from_hex(data: &str) -> AppResult<Vec<u8>> {
+    Ok(hex::decode(data)?)
+}
+
+#[allow(dead_code)]
 pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> AppResult<()> {
     // let mut thread_rng = rand::thread_rng();
     // let mut rand_v: Vec<u8>= vec![0u8; arr_len];
@@ -28,6 +38,7 @@ pub fn gen_random_byte_arr(rand_v: &mut Vec<u8>) -> AppResult<()> {
     // Ok(())
 }
 
+#[allow(dead_code)]
 pub fn gen_secured_random_byte_arr(arr_inp: &mut [u8]) -> AppResult<()> {
     // let mut rand_v: Vec<u8> = vec![0u8; arr_len];
     OsRng.fill_bytes(arr_inp);
