@@ -4,7 +4,6 @@ use bytes::Bytes;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
 use cbc::{Decryptor, Encryptor};
 use ctr::Ctr128BE;
-use log::info;
 use utils::error::app_error::AppResult;
 fn aes_ctr_encrypt(bit_length: usize, key: Bytes, iv: Bytes, plain: Bytes) -> AppResult<Bytes> {
     let byte_len: usize = bit_length / 8;
@@ -90,18 +89,18 @@ fn aes_cbc_decrypt(bit_length: usize, key: Bytes, iv: Bytes, encrypted: Bytes) -
     }
 
     // Remove PKCS7 padding
-    info!("Last decrypted: {:?}", decrypted);
+    // info!("Last decrypted: {:?}", decrypted);
     if let Some(&pad) = decrypted.last() {
         let pad_len = pad as usize;
         let len = decrypted.len();
         if pad_len <= block_len && pad_len <= len {
             decrypted.truncate(len - pad_len);
         }
-        info!(
-            "Removed Padding, pad_len: {}, decrypted_len: {}",
-            pad_len,
-            decrypted.len()
-        );
+        // info!(
+        //     "Removed Padding, pad_len: {}, decrypted_len: {}",
+        //     pad_len,
+        //     decrypted.len()
+        // );
     }
     Ok(Bytes::from(decrypted))
 }

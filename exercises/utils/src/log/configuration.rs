@@ -47,7 +47,7 @@ pub fn init_logger() {
         .unwrap_or_else(|| EnvFilter::new("info"));
     layers.push(Box::new(env_filter));
     let fmt_stdout = fmt::layer()
-        .with_target(true)
+        .with_target(false)
         .with_thread_names(true)
         .with_line_number(true)
         .with_file(true)
