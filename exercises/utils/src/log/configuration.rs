@@ -1,10 +1,8 @@
 use std::env;
 use std::sync::OnceLock;
-use tracing::subscriber;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling;
 use tracing_appender::rolling::Rotation;
-use tracing_subscriber::fmt::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{fmt, EnvFilter, Registry};
