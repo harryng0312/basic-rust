@@ -1,2 +1,2 @@
-pub mod test_rec;
+pub mod sample_rec;
 pub mod user;

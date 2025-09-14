@@ -30,16 +30,15 @@ opt-level = 1               # "s", "z" or 0-3
 
 [profile.test]
 inherits = "dev"
-opt-level = 0
-lto = false
-debug = "none"
+opt-level = 3
+panic = "abort"
 
 [profile.release]
 opt-level = 3               # "s", "z" or 0-3
 lto = true                  # Link Time Optimization enabled
 codegen-units = 1           # build slower, code is more optimized (more is building faster, less is more optimized)
 panic = "abort"             # abort or unwind - unwind for trace the errors
-debug = "line-tables-only"  # remove debug mode
+debug = "line-tables-only"  # remove debug mode, keep the filename and line of code, set to 1
 overflow-checks = false     # remove check overflow
 
 [profile.bench]
@@ -48,15 +47,16 @@ inherits = "release"
 [dependencies]
 utils = { path = "../utils" }
 macros = { path = "../macros" }
-tracing = "^0"
 paste = "^1"
+#log = "^0"
+tracing = "^0"
 tokio = { version = "^1", features = ["time", "rt-multi-thread", "sync", "rt", "macros"] }
 tokio-postgres = { version = "^0", features = ["with-uuid-0_8", "with-chrono-0_4"] }
 tokio-stream = "^0"
 bb8 = "^0"
 bb8-postgres = "^0"
 #async-channel = "^2"
-log = "^0"
+
 #toml = "^0"
 #env_logger = "^0"
 #once_cell = "^1"

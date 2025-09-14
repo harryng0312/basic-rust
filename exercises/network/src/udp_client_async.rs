@@ -82,7 +82,7 @@ async fn handle_serv_connection(
 /// # Examples
 ///
 /// ```shell
-/// $ cargo test --color=always --package basic-rust --bin basic-rust utils::tcp_client_async::start_client
+/// $ cargo tests --color=always --package basic-rust --bin basic-rust utils::tcp_client_async::start_client
 /// ```
 fn start_client() {
     init_logger();

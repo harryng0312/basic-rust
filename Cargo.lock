@@ -6096,7 +6096,6 @@ dependencies = [
  "chrono",
  "diesel",
  "dotenvy",
- "log",
  "macros",
  "once_cell",
  "paste",

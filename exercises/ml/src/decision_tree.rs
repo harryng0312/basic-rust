@@ -379,7 +379,7 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
     // info!("X_train {:?}", &X_train[0]);
     // info!("y_train {:?}", &y_train[1]);
 
-    // train test split
+    // train tests split
     let (m_x_train, y_train, m_x_test, y_test) = train_test_split(&m_x_data, &y_data, 0.2);
     info!("X_train:{:?}, y_train:{:?}", m_x_train.len(), y_train.len());
     info!("X_test:{:?}, y_test:{:?}", m_x_test.len(), y_test.len());
@@ -394,10 +394,10 @@ fn make_decision_tree() -> Result<(), Box<dyn Error>> {
         (end - start).as_secs_f64()
     );
     print_tree(&keywords, &tree_some, "");
-    // test
+    // tests
     // let opt_tree = Some(Box::new(tree));
 
-    // test
+    // tests
     let mut correct_count = 0u32;
     for (sample, label) in m_x_test.iter().zip(y_test.iter()) {
         let pred = predict(&tree_some, sample);

@@ -85,7 +85,7 @@ mod tests {
         init_logger();
         let s = Student(Person {
             id: 1,
-            name: "test".to_string(),
+            name: "tests".to_string(),
         });
         info!("{}", s.name);
     }

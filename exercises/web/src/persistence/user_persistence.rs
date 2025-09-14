@@ -23,7 +23,7 @@ pub fn delete(id: u64) -> AppResult<bool> {
 
 #[cfg(test)]
 mod tests {
-    use log::info;
+    use tracing::info;
     use utils::log::configuration::init_logger;
 
     #[test]

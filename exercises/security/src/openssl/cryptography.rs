@@ -4,7 +4,7 @@ use openssl::symm::{Cipher, Crypter, Mode};
 use std::cmp::{min};
 use utils::log::configuration::init_logger;
 
-// #[test]
+// #[tests]
 pub fn test_aes_ctr() {
     init_logger();
     // prepare

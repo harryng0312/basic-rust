@@ -51,17 +51,17 @@ pub fn init_logger() {
         .with_thread_names(true)
         .with_line_number(true)
         .with_file(true)
-        // for test
+        // for tests
         .with_writer(stdout)
         .with_test_writer();
 
     layers.push(Box::new(fmt_stdout));
 
     if cfg!(test) {
-        println!("Run with `RUST_LOG={}=debug` test", run_env);
+        println!("Run with `RUST_LOG={}=debug` tests", run_env);
     }
 
-    if run_env.to_lowercase() == "test" {
+    if run_env.to_lowercase() == "tests" {
         // do nothing
     } else {
         let file_appender = rolling::Builder::new()

@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn bench_perf() {
         init_logger();
-        // Tạo dữ liệu test
+        // Tạo dữ liệu tests
         let a: Vec<f32> = vec![1.0; N];
         let b: Vec<f32> = vec![2.0; N];
 

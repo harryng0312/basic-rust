@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn test_sha256() {
         init_logger();
-        let str_data = "Đây là dữ liệu cần test thử".as_bytes();
+        let str_data = "Đây là dữ liệu cần tests thử".as_bytes();
         let msg_digest = sha256(str_data);
         info!("Sha256 {:?}", to_hex(msg_digest.as_ref()));
     }
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn test_hmac_sha256() {
         init_logger();
-        let data = "Đây là dữ liệu cần được test thử".as_bytes();
+        let data = "Đây là dữ liệu cần được tests thử".as_bytes();
         let secret_key_data = "secret key".as_bytes();
         let hmac = hmac_sha256(secret_key_data, data).unwrap();
         info!(

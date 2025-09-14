@@ -7,7 +7,7 @@
 // $ export LIBTORCH_BYPASS_VERSION_CHECK=1
 // ```
 
-// #[test]
+// #[tests]
 // fn test_touch() {
 //     // Tạo tensor
 //     let x = Tensor::from_slice(&[1.0, 2.0, 3.0]); // Tensor 1D

@@ -5,7 +5,7 @@ use diesel::{table, AsChangeset, Identifiable, Insertable, Queryable};
 
 table! {
     #[sql_name="test_rec"]
-    test_recs (id) {
+    sample_recs (id) {
         #[sql_name="id_"]
         id -> BigInt,
         #[sql_name="name_"]
@@ -35,9 +35,9 @@ table! {
 
 record! {
     #[derive(Queryable, Identifiable, Insertable, AsChangeset)]
-    #[diesel(table_name=test_recs)]
+    #[diesel(table_name=sample_recs)]
     #[diesel(primary_key(id))]
-    TestRecord {
+    SampleRecord {
         id : i64,
         name : String,
         available : bool,
