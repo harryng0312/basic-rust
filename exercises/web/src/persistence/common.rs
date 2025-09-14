@@ -1,5 +1,5 @@
-use once_cell::sync::Lazy;
 use std::env;
+use std::sync::LazyLock;
 use tokio::sync::OnceCell;
 use tokio_postgres::NoTls;
 use utils::error::app_error::AppResult;
@@ -12,8 +12,8 @@ pub(crate) type DbConnection =
 type AsyncDbConnectionPool = bb8::Pool<bb8_postgres::PostgresConnectionManager<NoTls>>;
 pub(crate) type AsyncDbConnection =
     bb8::PooledConnection<'static, bb8_postgres::PostgresConnectionManager<NoTls>>;
-static DB_CONNECTION_POOL: Lazy<DbConnectionPool> =
-    Lazy::new(|| create_conn_pool().expect("Could not create DB connection pool"));
+static DB_CONNECTION_POOL: LazyLock<DbConnectionPool> =
+    LazyLock::new(|| create_conn_pool().expect("Could not create DB connection pool"));
 
 // static ASYNC_DB_CONNECTION_POOL: OnceCell<AsyncDbConnectionPool> = OnceCell::const_new();
 static ASYNC_DB_CONNECTION_POOL: OnceCell<AsyncDbConnectionPool> = OnceCell::const_new();
