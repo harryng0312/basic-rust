@@ -46,7 +46,7 @@ pub fn init_logger() {
     layers.push(Box::new(env_filter));
     let fmt_stdout = fmt::layer()
         .with_target(false)
-        .with_thread_names(true)
+        .with_thread_names(false)
         .with_line_number(true)
         .with_file(true)
         // for tests
@@ -59,7 +59,7 @@ pub fn init_logger() {
         println!("Run with `RUST_LOG={}=debug` tests", run_env);
     }
 
-    if run_env.to_lowercase() == "tests" {
+    if run_env.is_empty() || run_env.to_lowercase() == "tests" || run_env.to_lowercase() == "dev" {
         // do nothing
     } else {
         let file_appender = rolling::Builder::new()
@@ -73,8 +73,8 @@ pub fn init_logger() {
         guards.push(_guard);
         let fmt_file = fmt::layer()
             .with_ansi(false)
-            .with_target(true)
-            .with_thread_names(true)
+            .with_target(false)
+            .with_thread_names(false)
             .with_line_number(true)
             .with_file(true)
             .with_writer(file_writer);
