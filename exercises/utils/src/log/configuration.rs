@@ -59,7 +59,7 @@ pub fn init_logger() {
         println!("Run with `RUST_LOG={}=debug` tests", run_env);
     }
 
-    if run_env.is_empty() || run_env.to_lowercase() == "tests" || run_env.to_lowercase() == "dev" {
+    if run_env.to_lowercase() == "tests" || run_env.to_lowercase() == "dev" {
         // do nothing
     } else {
         let file_appender = rolling::Builder::new()
