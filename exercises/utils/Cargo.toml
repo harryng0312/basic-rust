@@ -8,16 +8,16 @@ edition = "2021"
 
 [dependencies]
 dotenvy = "^0"
-log = "^0"
+#log = "^0"
 #env_logger = "^0"
-tracing="^0"
-tracing-log = "^0"
+#tracing="^0"
+#tracing-log = "^0"
 tracing-subscriber = { version = "^0", features = ["env-filter"] }
 tracing-appender = "^0"
 chrono = "^0"
 serde = { version = "^1", features = ["derive"] }
 bigdecimal = "^0"
 anyhow = "^1"
-syn = { version = "^1", features = ["full"] }
-quote = "^1"
-proc-macro2 = "^1"
+#syn = { version = "^1", features = ["full"] }
+#quote = "^1"
+#proc-macro2 = "^1"

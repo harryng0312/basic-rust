@@ -5822,14 +5822,8 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "dotenvy",
- "log",
- "proc-macro2",
- "quote",
  "serde",
- "syn 1.0.109",
- "tracing",
  "tracing-appender",
- "tracing-log",
  "tracing-subscriber",
 ]
 
