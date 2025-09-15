@@ -50,10 +50,7 @@ pub fn init_logger() {
         .with_line_number(true)
         .with_file(true)
         // for tests
-        .with_writer(stdout)
-        .with_test_writer();
-
-    layers.push(Box::new(fmt_stdout));
+        .with_writer(stdout);
 
     if cfg!(test) {
         println!("Run with `RUST_LOG={}=debug` tests", run_env);
@@ -61,7 +58,10 @@ pub fn init_logger() {
 
     if run_env.to_lowercase() == "tests" || run_env.to_lowercase() == "dev" {
         // do nothing
+        let fmt_stdout = fmt_stdout.with_test_writer();
+        layers.push(Box::new(fmt_stdout));
     } else {
+        layers.push(Box::new(fmt_stdout));
         let file_appender = rolling::Builder::new()
             .rotation(Rotation::DAILY)
             .filename_prefix(log_file)

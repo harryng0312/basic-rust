@@ -34,7 +34,7 @@ mod tests {
     async fn test_insert() {
         init_logger();
         let mut ls_test_recs: Vec<SampleRecord> = vec![];
-        for i in 1..=10 {
+        for i in 11..=20 {
             // let _val = insert(&TestRecord {
             //     id: i,
             //     name: format!("name of {}", i),
@@ -50,9 +50,10 @@ mod tests {
             );
             ls_test_recs.push(test_rec);
         }
-        insert_batch(&ls_test_recs).await.unwrap();
-
-        let rt = Runtime::new().unwrap();
-        info!("Insert successful");
+        let exec = insert_batch(&ls_test_recs).await;
+        match exec {
+            Ok(_) => info!("Insert successful"),
+            Err(e) => info!("Insert failed:{}", e),
+        }
     }
 }

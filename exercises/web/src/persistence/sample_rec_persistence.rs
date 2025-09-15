@@ -36,7 +36,7 @@ pub fn insert(val: &SampleRecord) -> AppResult<()> {
     insert_into(sample_recs).values(val).execute(&mut conn)?;
     Ok(())
 }
-pub fn insert_batch(vals: &Vec<SampleRecord>) -> AppResult<()> {
+pub fn insert_batch(vals: &[SampleRecord]) -> AppResult<()> {
     let mut conn = get_connection()?;
     conn.transaction::<(), Error, _>(|connection| {
         insert_into(sample_recs).values(vals).execute(connection)?;
