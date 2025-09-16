@@ -302,7 +302,6 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
         pub async fn find_all(page_no: u32, page_size: u32) -> AppResult<Vec<#struct_name>> {
             use tokio::pin;
             use tokio_stream::StreamExt;
-            use web::persistence::common::get_async_connection;
 
             let conn = get_async_connection().await?;
             let mut result: Vec<#struct_name> = vec![];
@@ -329,8 +328,6 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
 
     let insert_fn = quote! {
         pub async fn insert(val: &#struct_name) -> AppResult<()> {
-            use web::persistence::common::get_async_connection;
-
             let conn = get_async_connection().await?;
             let sql = format!("insert into {} ({}) values ({})", #table_name, #col_list_str, #insert_params_str);
             let _ = conn
@@ -345,6 +342,9 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
     let delete_fn = quote! {};
 
     let output = quote! {
+        use utils::error::app_error::AppResult;
+        use web::persistence::common::get_async_connection;
+
         #find_all_fn
         #find_by_id
         #insert_fn

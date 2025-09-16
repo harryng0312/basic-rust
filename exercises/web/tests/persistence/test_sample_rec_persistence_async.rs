@@ -5,7 +5,7 @@ mod tests {
     use macros::{record, Crud};
 
     use tracing::info;
-    use utils::error::app_error::AppResult;
+
     use utils::log::configuration::init_logger;
     use web::models::sample_rec::SampleRecord;
     use web::persistence::sample_rec_persistence_async::{find, find_by_id, insert_batch};
