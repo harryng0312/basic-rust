@@ -268,7 +268,7 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
     let pk_fields_str = pk_fields.join(",");
 
     let mut get_ident_from_result: Vec<proc_macro2::TokenStream> = vec![];
-    for (field_name, field_ident) in field_names.iter().zip(field_idents) {
+    for (field_name, field_ident) in field_names.iter().zip(&field_idents) {
         let tmp_ident = quote! {row.get::<_,_>(#field_name) };
         get_ident_from_result.push(tmp_ident);
     }
@@ -278,9 +278,6 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
     let pk_fields_str = LitStr::new(pk_fields.join(",").as_str(), Span::call_site());
     let find_all_fn = quote! {
         pub async fn find_all(page_no: u32, page_size: u32) -> AppResult<Vec<#struct_name>> {
-            use tokio_postgres::types::ToSql;
-            use chrono::Local;
-            use chrono::NaiveDateTime;
             use tokio::pin;
             use tokio_stream::StreamExt;
             use web::persistence::common::get_async_connection;
@@ -309,10 +306,19 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
     let find_by_id = quote! {};
 
     let insert_fn = quote! {
-        pub fn insert(val: &#struct_name) -> AppResult<()> {
-            let table_name = #table_name.to_string();
-            let primary_keys = [#(#pk_fields),*];
+        pub async fn insert(val: &#struct_name) -> AppResult<()> {
+            use web::persistence::common::get_async_connection;
+
+            let conn = get_async_connection().await?;
+            let sql = format!("insert into {} ({}) values ({})", #table_name, #col_list_str, #insert_params_str);
+            let _ = conn
+                .execute(&sql, &[#(&val.#field_idents),*])
+                .await?;
             Ok(())
+
+            // let table_name = #table_name.to_string();
+            // let primary_keys = #pk_fields_str;
+            // Ok(())
         }
     };
 
