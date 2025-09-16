@@ -2848,6 +2848,7 @@ name = "macros"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "indexmap 2.9.0",
  "log",
  "proc-macro2",
  "quote",

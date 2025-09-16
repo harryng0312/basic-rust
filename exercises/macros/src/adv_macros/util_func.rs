@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::__private::ext::RepToTokensExt;
@@ -216,16 +217,19 @@ fn crud_get_tablename_pkkeys(ident_name: String, attrs: &Vec<Attribute>) -> (Str
     (tbl_name, pk_fields)
 }
 
-fn crud_get_fields(input_data: &Data) -> (Vec<String>, Vec<Ident>) {
-    let mut field_names: Vec<String> = vec![];
-    let mut field_idents: Vec<Ident> = vec![];
+fn crud_get_fields(input_data: &Data) -> (IndexMap<String, Ident>, IndexMap<String, Ident>) {
+    // let mut field_names: Vec<String> = vec![];
+    // let mut field_idents: Vec<Ident> = vec![];
+    // let mut field_idents: Vec<Ident> = vec![];
+    let mut map_field_idents: IndexMap<String, Ident> = IndexMap::new();
+    let mut map_col_idents: IndexMap<String, Ident> = IndexMap::new();
 
     if let Data::Struct(data_struct) = input_data {
         if let Fields::Named(fields_named) = &data_struct.fields {
             for field in fields_named.named.iter() {
                 let ident = field.ident.as_ref().unwrap();
                 let mut col_name = ident.to_string();
-
+                map_field_idents.insert(col_name.clone(), ident.clone());
                 for attr in &field.attrs {
                     // find `column` in #[column(name="")]
                     if attr.path().is_ident("column") {
@@ -241,13 +245,12 @@ fn crud_get_fields(input_data: &Data) -> (Vec<String>, Vec<Ident>) {
                         });
                     }
                 }
-                field_names.push(col_name);
-                field_idents.push(ident.clone());
+                map_col_idents.insert(col_name.clone(), ident.clone());
             }
         }
     }
 
-    (field_names, field_idents)
+    (map_col_idents, map_field_idents)
 }
 
 pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
@@ -257,25 +260,44 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
     let (table_name, pk_fields) = crud_get_tablename_pkkeys(struct_name.to_string(), &input_attrs);
 
     let input_data = input.data;
-    let (field_names, field_idents) = crud_get_fields(&input_data);
+    let (map_col_idents, map_field_idents) = crud_get_fields(&input_data);
+
+    let col_count = map_field_idents.len();
+    let field_names = map_col_idents
+        .keys()
+        .map(|ident| ident.to_string())
+        .collect::<Vec<String>>();
+    let field_idents = map_field_idents
+        .values()
+        .map(|ident| ident.to_owned())
+        .collect::<Vec<Ident>>();
+    let pk_fields_str = pk_fields.join(",");
 
     // prepare template
+    // common:
+    let table_name = LitStr::new(table_name.as_str(), Span::call_site());
+    let col_list_str = LitStr::new(field_names.join(", ").as_str(), Span::call_site());
+    // ----- find_all -----
 
-    let insert_params = (1..=field_idents.len())
+    // ----- find_by_id -----
+
+    // ----- insert -----
+    // insert params: $1, $2 ...
+    let insert_params = (1..=col_count)
         .map(|i| format!("${}", i))
         .collect::<Vec<String>>();
     let insert_params_str = insert_params.join(",");
-    let pk_fields_str = pk_fields.join(",");
-
-    let mut get_ident_from_result: Vec<proc_macro2::TokenStream> = vec![];
-    for (field_name, field_ident) in field_names.iter().zip(&field_idents) {
+    // map from DB rows to struct:
+    let mut stmt_map_db_struct: Vec<proc_macro2::TokenStream> = vec![];
+    for (field_name) in map_col_idents.keys() {
         let tmp_ident = quote! {row.get::<_,_>(#field_name) };
-        get_ident_from_result.push(tmp_ident);
+        stmt_map_db_struct.push(tmp_ident);
     }
-    // let get_ident_from_result_str = get_ident_from_result.join(", ");
-    let col_list_str = LitStr::new(field_names.join(", ").as_str(), Span::call_site());
-    let table_name = LitStr::new(table_name.as_str(), Span::call_site());
-    let pk_fields_str = LitStr::new(pk_fields.join(",").as_str(), Span::call_site());
+
+    // ----- update -----
+    // ----- delete -----
+
+    // generate code:
     let find_all_fn = quote! {
         pub async fn find_all(page_no: u32, page_size: u32) -> AppResult<Vec<#struct_name>> {
             use tokio::pin;
@@ -294,7 +316,7 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
             while let Some(row) = rows.next().await {
                 if let Ok(row) = row {
                     let rec = #struct_name::new(
-                        #(#get_ident_from_result),*
+                        #(#stmt_map_db_struct),*
                     );
                     result.push(rec);
                 }
@@ -315,10 +337,6 @@ pub(crate) fn create_crud(input: TokenStream) -> TokenStream {
                 .execute(&sql, &[#(&val.#field_idents),*])
                 .await?;
             Ok(())
-
-            // let table_name = #table_name.to_string();
-            // let primary_keys = #pk_fields_str;
-            // Ok(())
         }
     };
 
