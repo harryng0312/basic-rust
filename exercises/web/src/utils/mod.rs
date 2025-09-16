@@ -1,2 +1,2 @@
-pub(crate) mod macros;
 pub(crate) mod boot;
+pub(crate) mod macros;

@@ -20,4 +20,3 @@ pub fn update(user: &User) -> AppResult<bool> {
 pub fn delete(id: u64) -> AppResult<bool> {
     Err(anyhow!("User {} not found", id))
 }
-

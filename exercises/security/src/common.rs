@@ -20,7 +20,7 @@ pub fn from_base64(b64_str: &String) -> AppResult<Vec<u8>> {
     Ok(buff)
 }
 #[allow(dead_code)]
-pub fn to_hex(data: &[u8] ) -> String {
+pub fn to_hex(data: &[u8]) -> String {
     hex::encode(data)
 }
 

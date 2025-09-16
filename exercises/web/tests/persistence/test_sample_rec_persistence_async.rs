@@ -1,8 +1,11 @@
 #[cfg(test)]
 mod tests {
     use chrono::Local;
-    use tokio::runtime::Runtime;
+    use chrono::NaiveDateTime;
+    use macros::{record, Crud};
+
     use tracing::info;
+    use utils::error::app_error::AppResult;
     use utils::log::configuration::init_logger;
     use web::models::sample_rec::SampleRecord;
     use web::persistence::sample_rec_persistence_async::{find, find_by_id, insert_batch};
@@ -31,17 +34,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert() {
+    async fn test_insert_batch() {
         init_logger();
         let mut ls_test_recs: Vec<SampleRecord> = vec![];
         for i in 11..=20 {
-            // let _val = insert(&TestRecord {
-            //     id: i,
-            //     name: format!("name of {}", i),
-            //     available: i % 2 == 0,
-            //     created_at: Local::now().naive_local(),
-            // })
-            // .expect(format!("insert failed at {} step", i).as_str());
             let test_rec = SampleRecord::new(
                 i,
                 format!("name of {}", i),
@@ -55,5 +51,18 @@ mod tests {
             Ok(_) => info!("Insert successful"),
             Err(e) => info!("Insert failed:{}", e),
         }
+    }
+
+    // record! {
+    // #[derive(Crud(table_name="test_rec"))]
+    #[derive(Crud)]
+    #[crud(table_name = "test_rec", primary_key(id))]
+    #[record]
+    struct Foo {
+        #[column(name = "id_")]
+        id: i64,
+        #[column(name = "name_")]
+        name: String,
+        dob: NaiveDateTime,
     }
 }

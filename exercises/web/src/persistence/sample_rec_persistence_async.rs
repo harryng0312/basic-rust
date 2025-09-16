@@ -1,11 +1,8 @@
 use crate::models::sample_rec::SampleRecord;
 use crate::persistence::common::get_async_connection;
-use anyhow::anyhow;
 use chrono::NaiveDateTime;
-use diesel::RunQueryDsl;
 use tokio::pin;
 use tokio_postgres::types::ToSql;
-use tokio_postgres::GenericClient;
 use tokio_stream::StreamExt;
 use utils::error::app_error::AppResult;
 
@@ -21,10 +18,10 @@ pub async fn find(page_no: u32, page_size: u32) -> AppResult<Vec<SampleRecord>> 
     while let Some(row) = rows.next().await {
         if let Ok(row) = row {
             let rec = SampleRecord::new(
-                row.get("id_"),
-                row.get("name_"),
-                row.get("available"),
-                row.get::<_, NaiveDateTime>("created_at"),
+                row.get::<_, _>("id_"),
+                row.get::<_, _>("name_"),
+                row.get::<_, _>("available"),
+                row.get::<_, _>("created_at"),
             );
             result.push(rec);
         }
@@ -79,15 +76,21 @@ pub async fn insert_batch(vals: &[SampleRecord]) -> AppResult<()> {
         // sql_batch.push(String::from(sql));
     }
     // let exec = tx.batch_execute(sql_batch.join(";").as_str()).await;
-    let exec = tx.commit().await;
-    match exec {
-        Ok(_) => Ok(()),
-        Err(e) => Err(anyhow!(e)),
-    }
+    let exec = tx.commit().await?;
+    Ok(())
 }
 pub async fn update(val: &SampleRecord) -> AppResult<()> {
-    todo!()
+    let conn = get_async_connection().await?;
+    let sql = "update test_rec set name_=$2, available = $3  where id_ = $1 ";
+    let exec = conn
+        .execute(sql, &[&val.name, &val.available, &val.created_at])
+        .await?;
+    Ok(())
 }
 pub async fn delete(_id: i64) -> AppResult<()> {
-    todo!()
+    let conn = get_async_connection().await?;
+    let sql = "delete from test_rec where id_=$1";
+    let _ = conn.execute(sql, &[&_id]).await?;
+
+    Ok(())
 }

@@ -1,7 +1,7 @@
 use crate::common::gen_random_byte_arr;
-use log::{info};
+use log::info;
 use openssl::symm::{Cipher, Crypter, Mode};
-use std::cmp::{min};
+use std::cmp::min;
 use utils::log::configuration::init_logger;
 
 // #[tests]
@@ -29,7 +29,7 @@ pub fn test_aes_ctr() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
         let mut buff = vec![0u8; key_size];
@@ -57,7 +57,7 @@ pub fn test_aes_ctr() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         let mut count = 0usize;
         count += decryptor
             .update(cipher_data.as_slice(), &mut plain_data)
@@ -102,7 +102,7 @@ fn test_aes_gcm() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         // encryptor.set_tag_len(key_size).unwrap();
         // tag_data.resize(key_size, 0u8);
         let mut count = 0usize;
@@ -134,7 +134,7 @@ fn test_aes_gcm() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         let mut count = 0usize;
         decryptor.aad_update(aad_bin.as_slice()).unwrap();
         decryptor.set_tag(tag_data.as_slice()).unwrap();
@@ -173,7 +173,7 @@ fn test_aes_xts() {
     info!("Plain[{}]:{:?}", data.len(), data);
     // encrypt
     let mut cipher_data: Vec<u8> = vec![]; // vec![0u8; data.len() + block_size];
-    // let mut tag_data: Vec<u8> = vec![0u8; 16];
+                                           // let mut tag_data: Vec<u8> = vec![0u8; 16];
     {
         let mut encryptor = Crypter::new(
             cipher,
@@ -181,7 +181,7 @@ fn test_aes_xts() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         cipher.key_len();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
@@ -211,7 +211,7 @@ fn test_aes_xts() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         let mut count = 0usize;
         // decryptor.aad_update(aad_bin.as_slice()).unwrap();
         // decryptor.set_tag(tag_data.as_slice()).unwrap();
@@ -258,7 +258,7 @@ fn test_chacha20_poly1305() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         cipher.key_len();
         let mut count = 0usize;
         // count += encryptor.update(data, &mut cipher_data).unwrap();
@@ -291,7 +291,7 @@ fn test_chacha20_poly1305() {
             key_bin.as_slice(),
             Some(iv_bin.as_slice()),
         )
-            .unwrap();
+        .unwrap();
         let mut count = 0usize;
         decryptor.aad_update(aad_bin.as_slice()).unwrap();
         decryptor.set_tag(tag_data.as_slice()).unwrap();

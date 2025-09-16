@@ -15,3 +15,8 @@ pub fn sum(item: TokenStream) -> TokenStream {
 pub fn with(attr: TokenStream, item: TokenStream) -> TokenStream {
     adv_macros::util_func::create_with(attr, item)
 }
+
+#[proc_macro_derive(Crud, attributes(crud, column))]
+pub fn derive_crud(input: TokenStream) -> TokenStream {
+    adv_macros::util_func::create_crud(input)
+}
