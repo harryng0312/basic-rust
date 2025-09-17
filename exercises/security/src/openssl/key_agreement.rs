@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::common::{from_base64, to_base64};
-    use log::info;
+    use tracing::info;
     use openssl::bn::BigNum;
     use openssl::derive::Deriver;
     use openssl::dh::Dh;

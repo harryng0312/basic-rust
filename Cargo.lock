@@ -2600,6 +2600,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "k256"
+version = "0.13.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6e3919bbaa2945715f0bb6d3934a173d1e9a59ac23767fbaaef277265a7411b"
+dependencies = [
+ "cfg-if",
+ "ecdsa",
+ "elliptic-curve",
+ "once_cell",
+ "sha2",
+ "signature",
+]
+
+[[package]]
 name = "keccak"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4711,8 +4725,8 @@ dependencies = [
  "generic-array 1.2.0",
  "hex",
  "hmac",
+ "k256",
  "libc",
- "log",
  "openssl",
  "p256",
  "pbkdf2",
@@ -4720,6 +4734,7 @@ dependencies = [
  "rand_core 0.6.4",
  "sha2",
  "sha3",
+ "tracing",
  "utils",
 ]
 

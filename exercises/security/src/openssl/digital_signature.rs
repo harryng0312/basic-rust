@@ -2,7 +2,7 @@
 mod test_ds {
     use crate::common::{gen_secured_random_byte_arr, to_base64};
     use libc::tm;
-    use log::info;
+    use tracing::info;
     use openssl::ec::{EcGroup, EcKey};
     use openssl::hash::MessageDigest;
     use openssl::nid::Nid;

@@ -34,7 +34,7 @@ fn pbkdf2_hmac_sha256(
 mod tests {
     use crate::common::{gen_random_byte_arr, to_base64, to_hex};
     use crate::message_digest::{hmac_sha256, pbkdf2_hmac_sha256, sha256};
-    use log::info;
+    use tracing::info;
     use utils::log::configuration::init_logger;
 
     #[test]

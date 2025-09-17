@@ -47,7 +47,7 @@ pub fn gen_secured_random_byte_arr(arr_inp: &mut [u8]) {
 #[cfg(test)]
 mod tests {
     use crate::common::{from_base64, gen_random_byte_arr, to_base64};
-    use log::info;
+    use tracing::info;
     // use log::kv::ToValue;
     use utils::log::configuration::init_logger;
 

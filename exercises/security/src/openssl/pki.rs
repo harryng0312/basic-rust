@@ -1,10 +1,10 @@
 use crate::common::to_base64;
 use libc::passwd;
-use log::info;
 use openssl::ec::{EcGroup, EcKey};
 use openssl::nid::Nid;
 use openssl::symm::Cipher;
 use std::error::Error;
+use tracing::info;
 use utils::log::configuration::init_logger;
 
 fn gen_keypair(

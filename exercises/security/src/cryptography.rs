@@ -5,7 +5,7 @@ use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
 use cbc::{Decryptor, Encryptor};
 use cipher::consts::U12;
 use ctr::Ctr128BE;
-use log::info;
+use tracing::info;
 use utils::error::app_error::AppResult;
 fn aes_ctr_encrypt(bit_length: usize, key: &[u8], iv: &[u8], plain: &[u8]) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
@@ -181,7 +181,7 @@ mod tests {
     #![allow(clippy::too_many_arguments, unused_variables, dead_code)]
     use super::*;
     use crate::common::to_hex;
-    use log::info;
+    use tracing::info;
     use rand_core::{OsRng, RngCore};
     use utils::log::configuration::init_logger;
 

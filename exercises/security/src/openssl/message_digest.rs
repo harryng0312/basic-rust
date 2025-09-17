@@ -1,7 +1,7 @@
 use crate::common::{gen_random_byte_arr, to_base64};
 use base64_stream::ToBase64Reader;
 use libc::rand;
-use log::info;
+use tracing::info;
 use openssl::hash::{hash, Hasher, MessageDigest};
 use openssl::pkcs5::pbkdf2_hmac;
 use openssl::pkey::PKey;
