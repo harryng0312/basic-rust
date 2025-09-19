@@ -181,8 +181,8 @@ mod tests {
     #![allow(clippy::too_many_arguments, unused_variables, dead_code)]
     use super::*;
     use crate::common::to_hex;
-    use tracing::info;
     use rand_core::{OsRng, RngCore};
+    use tracing::info;
     use utils::log::configuration::init_logger;
 
     #[test]

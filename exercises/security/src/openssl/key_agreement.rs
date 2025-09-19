@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod test {
     use crate::common::{from_base64, to_base64};
-    use tracing::info;
     use openssl::bn::BigNum;
     use openssl::derive::Deriver;
     use openssl::dh::Dh;
     use openssl::ec::{EcGroup, EcKey};
     use openssl::nid::Nid;
     use openssl::pkey::{Id, PKey};
+    use tracing::info;
     use utils::log::configuration::init_logger;
 
     #[test]

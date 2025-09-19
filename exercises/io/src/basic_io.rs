@@ -1,5 +1,3 @@
-use std::io::{Read, Seek, Write};
-
 fn copy_file() {
     // open src
     // create dest

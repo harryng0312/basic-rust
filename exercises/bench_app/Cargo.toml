@@ -1,0 +1,25 @@
+[package]
+name = "bench_app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+utils = { path = "../utils" }
+chrono = "^0"
+rayon = "^1"
+num_cpus = "^1"
+tracing = "^0"
+
+[dev-dependencies]
+criterion = "^0"
+
+[profile-bench]
+opt-level = 0               # "s", "z" or 0-3
+lto = false                 # Link Time Optimization enabled
+codegen-units = 16          # build slower, code is more optimized (more is building faster, less is more optimized)
+panic = "unwind"            # abort or unwind - unwind for trace the errors
+debug = "line-tables-only"  # debug mode
+
+[[bench]]
+name = "loop_bench"
+harness = false

@@ -1,7 +1,7 @@
 use crate::common::gen_random_byte_arr;
-use tracing::info;
 use openssl::symm::{Cipher, Crypter, Mode};
 use std::cmp::min;
+use tracing::info;
 use utils::log::configuration::init_logger;
 
 // #[tests]

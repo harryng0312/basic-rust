@@ -1,7 +1,5 @@
 // flops.rs
-use std::env;
-use std::thread;
-use std::time::Instant;
+
 
 fn parse_usize(arg: Option<&String>, default: usize) -> usize {
     arg.and_then(|s| s.parse::<usize>().ok()).unwrap_or(default)
@@ -46,8 +44,11 @@ fn run_f32(iters: u64) -> f32 {
 #[cfg(test)]
 mod test_bench_unsafe {
     use super::*;
-    use log::info;
+    use tracing::info;
     use utils::log::configuration::init_logger;
+    use std::env;
+    use std::thread;
+    use std::time::Instant;
 
     #[test]
     fn test_bench_perf() {

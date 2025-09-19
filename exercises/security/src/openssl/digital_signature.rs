@@ -2,12 +2,12 @@
 mod test_ds {
     use crate::common::{gen_secured_random_byte_arr, to_base64};
     use libc::tm;
-    use tracing::info;
     use openssl::ec::{EcGroup, EcKey};
     use openssl::hash::MessageDigest;
     use openssl::nid::Nid;
     use openssl::pkey::{PKey, PKeyRef};
     use openssl::sign::{Signer, Verifier};
+    use tracing::info;
 
     use p256::ecdsa::{
         signature::Signer as ECDSASigner, signature::Verifier as ECDSAVerifier, Signature,

@@ -1,13 +1,13 @@
 use crate::common::{gen_random_byte_arr, to_base64};
 use base64_stream::ToBase64Reader;
 use libc::rand;
-use tracing::info;
 use openssl::hash::{hash, Hasher, MessageDigest};
 use openssl::pkcs5::pbkdf2_hmac;
 use openssl::pkey::PKey;
 use openssl::sign::Signer;
 use std::error::Error;
 use std::io::{Cursor, Read, Write};
+use tracing::info;
 use utils::log::configuration::init_logger;
 
 #[test]
