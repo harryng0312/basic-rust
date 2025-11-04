@@ -44,3 +44,6 @@ resolver = "2"
 #edition = "2021"
 
 #[dependencies]
+
+# [package.metadata.cargo-scripts]
+# pre-build = "cargo fmt -- --check && cargo clippy -- -D warnings"

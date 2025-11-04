@@ -1,0 +1,8 @@
+max_width = 100              # max-length in a line
+hard_tabs = false            # space instead of tab
+tab_spaces = 4
+edition = "2021"             # Rust version
+reorder_imports = true       # reorder import
+use_field_init_shorthand = true
+normalize_comments = true
+wrap_comments = true

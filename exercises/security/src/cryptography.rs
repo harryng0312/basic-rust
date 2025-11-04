@@ -3,10 +3,10 @@ use aes_gcm_stream::{Aes128GcmStreamDecryptor, Aes128GcmStreamEncryptor};
 use anyhow::anyhow;
 use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, StreamCipher};
 use cbc::{Decryptor, Encryptor};
-use cipher::consts::U12;
 use ctr::Ctr128BE;
 use tracing::info;
 use utils::error::app_error::AppResult;
+
 fn aes_ctr_encrypt(bit_length: usize, key: &[u8], iv: &[u8], plain: &[u8]) -> AppResult<Vec<u8>> {
     let block_size: usize = bit_length / 8;
     if key.len() != block_size || iv.len() != block_size {

@@ -1,8 +1,8 @@
 mod common;
 mod cryptography;
+mod digital_signature;
 mod message_digest;
 mod openssl;
-mod digital_signature;
 
 fn main() {
     println!("Hello, world!");

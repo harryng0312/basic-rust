@@ -1,4 +1,4 @@
-use core::arch::aarch64::*;
+use core::arch::aarch64::{vdupq_n_f32, vfmaq_f32, vld1q_f32, vst1q_f32};
 // SIMD NEON cho Apple Silicon
 
 const N: usize = 1 << 20; // Kích thước mảng (nằm vừa L2 cache)
