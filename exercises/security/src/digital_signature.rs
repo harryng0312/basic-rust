@@ -17,8 +17,8 @@ mod test_ds {
 
         init_logger();
         const BIT_LEN: usize = 256usize;
-        let mut priv_key_str: String;
-        let mut pub_key_str: String;
+        let priv_key_str: String;
+        let pub_key_str: String;
         // Generate key pair
         {
             let mut signing_key_bytes = [0u8; BIT_LEN / 8];
@@ -49,7 +49,7 @@ mod test_ds {
         let data_bin = b"this is some data to sign";
         let sign_vec_bin: Vec<u8>;
         {
-            let mut priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
+            let priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
             let sign: Signature = priv_key.sign(data_bin);
             sign_vec_bin = sign.to_bytes().to_vec();
             info!(
@@ -81,8 +81,8 @@ mod test_ds {
         };
         init_logger();
         const BIT_LEN: usize = 256usize;
-        let mut priv_key_str: String;
-        let mut pub_key_str: String;
+        let priv_key_str: String;
+        let pub_key_str: String;
 
         // generate key pair
         {
@@ -112,7 +112,7 @@ mod test_ds {
         let data_bin = b"this is some data to sign";
         let sign_vec_bin: Vec<u8>;
         {
-            let mut priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
+            let priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
             let sign: Signature = priv_key.sign(data_bin);
             sign_vec_bin = sign.to_bytes().to_vec();
             info!(

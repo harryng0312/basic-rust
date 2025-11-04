@@ -18,8 +18,8 @@ mod test {
         // create EC group,
         let group = EcGroup::from_curve_name(Nid::SECP256K1).expect("Failed to create EC group");
         // Alice creates key_pair and publishes the public_key
-        let mut a_priv_key: String;
-        let mut a_pub_key: String;
+        let a_priv_key: String;
+        let a_pub_key: String;
         {
             let ec_key = EcKey::generate(&group).expect("Can not generate EC Key");
             let priv_key_der = ec_key.private_key_to_der().unwrap();

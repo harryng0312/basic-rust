@@ -31,7 +31,7 @@ opt-level = 1               # "s", "z" or 0-3
 [profile.test]
 inherits = "dev"
 opt-level = 3
-panic = "abort"
+panic = "unwind"
 
 [profile.release]
 opt-level = 3               # "s", "z" or 0-3

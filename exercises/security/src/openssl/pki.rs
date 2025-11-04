@@ -14,11 +14,11 @@ fn gen_keypair(
 ) -> Result<(String, String), Box<dyn Error>> {
     let ec_group = EcGroup::from_curve_name(Nid::SECP256K1).unwrap();
     let ec_key = EcKey::generate(&ec_group).unwrap();
-    let mut priv_key_b64 = "".to_string();
-    let mut pub_key_b64 = "".to_string();
+    let mut _priv_key_b64: String;
+    let mut _pub_key_b64: String;
     if use_pem {
         if cipher.is_some() && passwd.is_some() {
-            priv_key_b64 = String::from_utf8_lossy(
+            _priv_key_b64 = String::from_utf8_lossy(
                 ec_key
                     .private_key_to_pem_passphrase(cipher.unwrap(), passwd.unwrap())
                     .unwrap()
@@ -26,16 +26,17 @@ fn gen_keypair(
             )
             .to_string();
         } else {
-            priv_key_b64 = String::from_utf8_lossy(ec_key.private_key_to_pem().unwrap().as_slice())
-                .to_string();
+            _priv_key_b64 =
+                String::from_utf8_lossy(ec_key.private_key_to_pem().unwrap().as_slice())
+                    .to_string();
         }
-        pub_key_b64 =
+        _pub_key_b64 =
             String::from_utf8_lossy(ec_key.public_key_to_pem().unwrap().as_slice()).to_string();
     } else {
-        priv_key_b64 = to_base64(ec_key.private_key_to_der().unwrap().as_slice()).unwrap();
-        pub_key_b64 = to_base64(ec_key.public_key_to_der().unwrap().as_slice()).unwrap();
+        _priv_key_b64 = to_base64(ec_key.private_key_to_der().unwrap().as_slice()).unwrap();
+        _pub_key_b64 = to_base64(ec_key.public_key_to_der().unwrap().as_slice()).unwrap();
     }
-    Ok((priv_key_b64, pub_key_b64))
+    Ok((_priv_key_b64, _pub_key_b64))
 }
 #[test]
 fn test_gen_keypair() {

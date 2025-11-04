@@ -27,8 +27,8 @@ mod test_ds {
         // Create EC group
         let msg_digest = MessageDigest::sha256();
         let group = EcGroup::from_curve_name(Nid::SECP256K1).expect("Failed to create EC group");
-        let mut priv_key_str: String;
-        let mut pub_key_str: String;
+        let priv_key_str: String;
+        let pub_key_str: String;
         // Generate key_pair
         {
             let ec_key = EcKey::generate(&group).expect("Failed to generate EC key");
@@ -44,20 +44,20 @@ mod test_ds {
         let data_bin = b"this is some data to sign";
 
         // Sign
-        let mut signature: Vec<u8>;
+        let signature: Vec<u8>;
         {
             let priv_key = priv_key_str.as_bytes();
             let pkey = PKey::private_key_from_pem(&priv_key).unwrap();
             let mut signer = Signer::new(msg_digest, &pkey).unwrap();
             signer.update(data_bin).unwrap();
-            let mut buff = vec![0u8; signer.len().unwrap()];
+            let buff = vec![0u8; signer.len().unwrap()];
             info!("Singer buff len: {}", buff.len());
             signature = signer.sign_to_vec().unwrap();
             info!("Signature len: {}", signature.len());
         }
         info!("Signature: {}", to_base64(signature.as_slice()).unwrap());
         // Verify
-        let mut valid = false;
+        let valid: bool;
         {
             let pub_key = pub_key_str.as_bytes();
             let pkey = PKey::public_key_from_pem(&pub_key).unwrap();
@@ -73,8 +73,8 @@ mod test_ds {
     fn test_ecdsa_rs() {
         init_logger();
         const BIT_LEN: usize = 256usize;
-        let mut priv_key_str: String;
-        let mut pub_key_str: String;
+        let priv_key_str: String;
+        let pub_key_str: String;
         // Generate key pair
         {
             let mut signing_key_bytes = [0u8; BIT_LEN / 8];
@@ -102,9 +102,9 @@ mod test_ds {
         // Sign
         // Data for signing
         let data_bin = b"this is some data to sign";
-        let mut sign_vec_bin: Vec<u8>;
+        let sign_vec_bin: Vec<u8>;
         {
-            let mut priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
+            let priv_key = SigningKey::from_pkcs8_pem(priv_key_str.as_str()).unwrap();
             let sign: Signature = priv_key.sign(data_bin);
             sign_vec_bin = sign.to_bytes().to_vec();
             info!(
@@ -115,7 +115,7 @@ mod test_ds {
 
         // Verify
         {
-            let mut pub_key = VerifyingKey::from_public_key_pem(pub_key_str.as_str()).unwrap();
+            let pub_key = VerifyingKey::from_public_key_pem(pub_key_str.as_str()).unwrap();
             let sign_bytes: GenericArray<u8, U64> =
                 GenericArray::from_slice(sign_vec_bin.as_slice()).to_owned();
             // let signature_array: SignatureBytes<NistP256> = GenericArray::clone_from_slice(sign_vec_bin.as_slice());

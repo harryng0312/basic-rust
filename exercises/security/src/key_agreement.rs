@@ -1,6 +1,6 @@
 #[cfg(test)]
-mod test {
-    use crate::common::{from_base64, gen_secured_random_byte_arr, to_base64};
+mod tests {
+    use crate::common::{gen_secured_random_byte_arr, to_base64};
     use p256::ecdh::diffie_hellman;
 
     use rand_core::OsRng;
@@ -11,7 +11,6 @@ mod test {
     /// Suppose there are 02 people: Alice & Bob
     ///
     fn test_ecdh_p256() {
-        use p256::ecdh::SharedSecret;
         use p256::pkcs8::{
             DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, LineEnding,
         };
