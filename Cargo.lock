@@ -7086,6 +7086,7 @@ dependencies = [
  "paste",
  "sea-orm",
  "serde",
+ "sqlx",
  "tokio",
  "tokio-postgres",
  "tokio-stream",

@@ -67,4 +67,5 @@ diesel = { version = "^2", features = ["postgres", "chrono", "r2d2"] }
 #r2d2="^0"
 #time="^0"
 #mapper="^1"
+sqlx = { version = "^0", features = ["runtime-tokio-native-tls", "postgres", "macros", "uuid", "chrono"] }
 sea-orm = { version = "^0", features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
